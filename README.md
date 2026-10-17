@@ -46,3 +46,10 @@ bash start.sh upload /srv/media/My.Release --cat 6
 
 Browser and CLI uploads appear together in **Activity**, with their progress,
 logs and results. Use the same installation and persistent data folder.
+
+For a single file, select it in the content browser. The uploader creates a release
+folder beside it and adds a link. Choose **Hardlink** or **Softlink** in
+**Settings → Single-file uploads**. Hardlinks require the same filesystem;
+softlinks require the original file to stay accessible. No file data is copied.
+The seeding client must see both the release folder and original media through
+the same library mapping. The media mount needs write access to create the folder.

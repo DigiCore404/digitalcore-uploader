@@ -184,3 +184,5 @@ details>summary:focus-visible{outline:3px solid #a5dbff;outline-offset:3px}
 .login-card label{color:#c5d4e3}
 .login-copy p,.login-card>p{color:#b1c0cf}
 @media(max-width:600px){.login-art{border-right:0;border-bottom:1px solid #3a526b}}
+
+.config-field select{width:100%;min-height:36px;font-size:.8125rem}.folder-row.file-row{width:100%;text-align:left;cursor:pointer}.folder-row.file-row:hover{background:#203a50;color:#f0f6fc}
