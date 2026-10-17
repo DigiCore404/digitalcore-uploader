@@ -4,6 +4,16 @@ Upload to DigitalCore through your browser or the command line. Includes metadat
 lookup with TMDB, TVmaze and IGDB, automatic screenshots, MediaInfo, DigitalCore's
 image host and qBittorrent integration.
 
+## Screenshots
+
+The empty upload workspace:
+
+![Empty upload workspace](docs/images/workspace-empty.png)
+
+Built-in installation and seeding guide:
+
+![Built-in manuals and folder mapping](docs/images/manuals.png)
+
 ## Install
 
 For Docker or Synology, you need Linux x86_64 and Docker Compose (Container Manager
