@@ -8,11 +8,23 @@ image host and qBittorrent integration.
 
 The empty upload workspace:
 
-![Empty upload workspace](docs/images/workspace-empty.png)
+![Empty upload workspace](docs/images/workspace-empty.jpg)
 
 Built-in installation and seeding guide:
 
-![Built-in manuals and folder mapping](docs/images/manuals.png)
+![Built-in manuals and folder mapping](docs/images/manuals.jpg)
+
+### Settings & automation
+
+![Uploader settings and image host](docs/images/settings.jpg)
+
+### Screenshots & thumbnail sheets
+
+![Screenshot and MTN configuration](docs/images/screenshot-settings.jpg)
+
+### Metadata search
+
+![Empty metadata search](docs/images/metadata-search.jpg)
 
 ## Install
 
