@@ -103,8 +103,8 @@ docker compose run --rm uploader upload /content/My.Release --cat 6 --dry-run
 Set `IMAGE` in `.env` to a specific release tag for repeatable installs. Updates
 preserve mounted configuration and history. `latest` tracks stable releases;
 `edge` tracks main. Build locally with
-`docker build --target release -t dc_uploader:local .`, then select that
-image with `setup.sh --image dc_uploader:local --media /srv/media`.
+`docker build --target release -t digitalcore-uploader:local .`, then select that
+image with `setup.sh --image digitalcore-uploader:local --media /srv/media`.
 
 Third-party tool licences are retained in `bin`. The image includes the rar2fs
 and UnRAR licences, corresponding source archives and build script under

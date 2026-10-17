@@ -1,4 +1,4 @@
-name: dc_uploader
+name: digitalcore-uploader
 services:
   uploader:
     image: ${IMAGE:-ghcr.io/digicore404/digitalcore-uploader:edge}

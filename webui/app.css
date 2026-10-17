@@ -174,3 +174,11 @@ details>summary::marker{color:#cce6fa}
 details>summary:hover,details[open]>summary{color:#ffffff}
 details>summary:focus-visible{outline:3px solid #a5dbff;outline-offset:3px}
 .automation-guide pre{background:#0a1521;color:#e4edf5}
+/* One continuous login background; the form is not a separate shaded block. */
+.login-screen{background:#101e2d}
+.login-art,.login-card{background:transparent;box-shadow:none}
+.login-card{border:0;color:#e4edf5}
+.login-art:after{display:none}
+.login-copy h1,.login-card h2{color:#f0f6fc}
+.login-card label{color:#c5d4e3}
+.login-copy p,.login-card>p{color:#b1c0cf}

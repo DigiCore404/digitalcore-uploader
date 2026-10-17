@@ -24,7 +24,7 @@ def entries():
 def build():
     files = entries()
     output = ROOT/'dist'; output.mkdir(exist_ok=True)
-    stem = 'dc_uploader-docker-'+VERSION
+    stem = 'digitalcore-uploader-docker-'+VERSION
     paths = [output/(stem+'.tar.gz'), output/(stem+'.zip')]
     with paths[0].open('wb') as stream, gzip.GzipFile(filename='', fileobj=stream, mode='wb', mtime=0) as gz, tarfile.open(fileobj=gz, mode='w') as tar:
         for name, raw in sorted(files.items()):

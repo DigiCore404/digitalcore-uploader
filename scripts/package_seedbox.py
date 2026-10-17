@@ -11,7 +11,7 @@ except ModuleNotFoundError:
     from publication import check
 
 ROOT=Path(__file__).resolve().parents[1]
-NAME='dc_uploader-seedbox'
+NAME='digitalcore-uploader-seedbox'
 VERSION='3.0.0'
 
 

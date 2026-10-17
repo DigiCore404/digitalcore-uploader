@@ -12,8 +12,8 @@ on Synology).
 ```bash
 git clone https://github.com/DigiCore404/digitalcore-uploader.git
 cd digitalcore-uploader
-docker build --target release -t dc-uploader:local .
-bash setup.sh --media /srv/media --image dc-uploader:local --bind 0.0.0.0
+docker build --target release -t digitalcore-uploader:local .
+bash setup.sh --media /srv/media --image digitalcore-uploader:local --bind 0.0.0.0
 ```
 
 Replace `/srv/media` with your media folder. When running as root, also pass your

@@ -8,8 +8,8 @@ Based on the existing DigitalCore/DC Uploader backend; attribution remains in th
 Upload the package to a folder you own on the seedbox, then connect over SSH:
 
 ```bash
-tar -xzf dc_uploader-seedbox-3.0.0.tar.gz
-cd dc_uploader-seedbox
+tar -xzf digitalcore-uploader-seedbox-3.0.0.tar.gz
+cd digitalcore-uploader-seedbox
 bash install.sh
 ```
 
@@ -119,7 +119,7 @@ bash start.sh upload /home/your-user/media/My.Release --cat 6
 In the **download client**, enable **Run external program on torrent finished**:
 
 ```text
-/bin/bash /home/your-user/dc_uploader/start.sh completed "%F" --cat 6 --hash "%I"
+/bin/bash /home/your-user/digitalcore-uploader/start.sh completed "%F" --cat 6 --hash "%I"
 ```
 
 Replace the installation path and category. `%F` supplies the completed content path;
@@ -192,7 +192,7 @@ If your provider supports systemd user services, run as your ordinary account:
 ```bash
 .venv/bin/python scripts/service.py install
 .venv/bin/python scripts/service.py status
-journalctl --user -u dc_uploader.service -n 30
+journalctl --user -u digitalcore-uploader.service -n 30
 ```
 
 Stop a foreground `start-web.sh` process with Ctrl+C before starting the service on

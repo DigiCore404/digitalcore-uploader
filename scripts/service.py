@@ -47,7 +47,7 @@ def main():
         parser.error('This installer needs Linux with systemd. On Synology use the supplied Docker service.')
     if os.geteuid()==0:
         parser.error('Run this as the regular user who owns the uploader, without sudo.')
-    name='dc_uploader.service'
+    name='digitalcore-uploader.service'
     if args.action=='install':
         python=ROOT/'.venv/bin/python'
         if not python.is_file():parser.error('Run bash install.sh first.')

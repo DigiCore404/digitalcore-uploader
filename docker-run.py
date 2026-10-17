@@ -28,7 +28,7 @@ def command(args, config):
         args = ['upload', '/content/' + source.as_posix(), *args[2:]]
     if not args or args[0] in ('gui', 'web'):
         raise ValueError('Use Docker Compose for the browser interface. This helper runs check, upload or watch.')
-    return result + ['dc_uploader:local'] + args
+    return result + ['digitalcore-uploader:local'] + args
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
     config = uploader.load_config()
     args = sys.argv[1:] or ['check']
     if args == ['build']:
-        return subprocess.call(['docker', 'build', '-t', 'dc_uploader:local', str(uploader.ROOT)])
+        return subprocess.call(['docker', 'build', '-t', 'digitalcore-uploader:local', str(uploader.ROOT)])
     if not Path(config.get('Paths', 'DATADIR')).is_dir():
         raise ValueError('Create the DATADIR content folder configured in config.ini first.')
     for path in (Path(config.get('Paths', 'WATCHFOLDER')), uploader.ROOT / 'data',
