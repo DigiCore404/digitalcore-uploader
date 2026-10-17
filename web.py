@@ -253,7 +253,7 @@ class Workspace:
             self.drafts[token] = {'job': job, 'config': config_digest(config), 'expires': time.time() + 1800}
         summary = folder_summary(path)
         errors = uploader.check_config(config)
-        if summary['archives'] and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
+        if summary['archives'] and config.get('UnrarUpload','MODE',fallback='original_only')!='original_only' and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
             errors.append('Archive files found. Choose an extracted release folder before uploading.')
         return {'review_id': token, 'job': job, 'summary': summary,
                 'category_name': next(c['name'] for c in uploader.categories() if c['id'] == job['category']),
@@ -271,7 +271,7 @@ class Workspace:
             if config_digest(config) != draft['config']:
                 raise ValueError('Settings changed. Review the upload again.')
             errors = uploader.check_config(config)
-            if folder_summary(draft['job']['source'])['archives'] and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
+            if folder_summary(draft['job']['source'])['archives'] and config.get('UnrarUpload','MODE',fallback='original_only')!='original_only' and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
                 errors.append('Archive files found. Choose an extracted release folder before uploading.')
             if errors:
                 raise ValueError('\n'.join(errors))

@@ -9,8 +9,13 @@ def request(token, path, params=None):
     try:
         with requests.Session() as session:
             session.trust_env = False
-            response = session.get(API + path, params=params, headers={
-                'Authorization': 'Bearer ' + token, 'Accept': 'application/json'},
+            parameters = dict(params or {})
+            headers = {'Accept': 'application/json'}
+            if re.fullmatch(r'[a-fA-F0-9]{32}', token):
+                parameters['api_key'] = token
+            else:
+                headers['Authorization'] = 'Bearer ' + token
+            response = session.get(API + path, params=parameters, headers=headers,
                 timeout=20, allow_redirects=False)
             if response.status_code in (401, 403):
                 raise ValueError('TMDB rejected the token. Check Settings.')

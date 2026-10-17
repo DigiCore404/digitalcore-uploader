@@ -251,3 +251,25 @@ while seeding. The hardened systemd user service disallows privilege elevation;
 a provider must explicitly permit fusermount if using rar2fs from that service.
 Unpacked archives require new torrent hashes; ordinary media imports reuse their
 original piece hashes through mkbrr modify.
+
+## Automatic CLI metadata and legacy folder options
+
+`bash start.sh upload /srv/media/Release` detects the category from `filters.json`;
+`--cat NUMBER` overrides it. MP3 files are recognized as Music/MP3.
+For a folder outside DATADIR use `--ln` (hardlink, then symlink fallback),
+`--cp` (copy), or `--mv` (move). Moving also changes the source client's files.
+
+The upload worker checks NFO IMDb IDs first, then searches TMDB for movies/TV,
+with TVmaze as a TV fallback. Games use IGDB. Configure the same provider
+credentials in Settings or config.ini; legacy `[TMDB] APIKEY` remains supported.
+Explicit metadata, descriptions and images take precedence. `--imdb tt1234567`
+and `--game-url https://www.igdb.com/games/example` can supply IDs directly.
+
+Packed RAR uploads use `UnrarUpload.MODE = original_only` by default.
+`RAR2FS_SCREENSHOTS` and its category list control temporary preview mounts;
+only the original files go into the torrent. `unpacked_only` remains available
+when explicitly selected. Host FUSE access is required for archive previews.
+
+`bash install.sh --https --domain seedbox.example.com` creates a self-signed
+certificate without root and preserves an existing certificate pair. Use
+`--service` as well to configure HTTPS for the user service.

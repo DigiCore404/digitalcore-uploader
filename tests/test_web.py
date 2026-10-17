@@ -77,6 +77,9 @@ WATCHFOLDER = {self.root / 'watch'}
 TMP_DIR = {self.root / 'scratch'}
 UPLOADLOG = {self.root / 'logs/upload.log'}
 [Settings]
+CHECK_UPDATES = false
+IMDB = false
+GAME_INFO = false
 IMAGE_UPLOAD = false
 SCREENSHOTS = false
 MEDIAINFO = false
@@ -325,7 +328,18 @@ MEDIAINFO = false
         self.assertEqual(response.status_code, 400)
         self.assertIn('release subfolder', response.json()['error'])
 
-    def test_archives_are_flagged_before_publication(self):
+    def test_original_rar_payload_is_reviewable_without_unpacking(self):
+        self.login()
+        (self.release/'release.rar').write_bytes(b'archive')
+        response=self.review()
+        self.assertEqual(response.status_code,200,response.text)
+        self.assertEqual(response.json()['summary']['archives'],1)
+        self.assertNotIn('Archive files found. Choose an extracted release folder before uploading.',response.json()['errors'])
+
+    def test_unpacked_mode_archives_are_flagged_before_publication(self):
+        with self.config.open('a') as handle: handle.write('\n[UnrarUpload]\nMODE = unpacked_only\n')
+        from utils.config_loader import ConfigLoader
+        ConfigLoader._cache.clear()
         self.login()
         (self.release / 'release.rar').write_bytes(b'archive')
         response = self.review()

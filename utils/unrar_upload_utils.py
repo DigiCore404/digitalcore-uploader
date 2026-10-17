@@ -115,7 +115,7 @@ def choose_mount_archive(rar_files):
 
 
 def should_upload_unrar(release_name, release_dir, category_id):
-    if config.get('UnrarUpload','MODE',fallback='') == 'unpacked_only':
+    if config.get('UnrarUpload','MODE',fallback='') in ('unpacked_only','original_only'):
         return False, 'handled_before_upload', []
     if not unrar_config_enabled():
         return False, 'disabled', []

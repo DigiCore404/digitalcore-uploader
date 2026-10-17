@@ -26,7 +26,7 @@ def _search_any(patterns, name):
     )
 
 
-def determine_category(directory_name, manual_id=None):
+def determine_category(directory_name, manual_id=None, directory=None):
     """Determine the category of the release based on its name, using filters.json."""
     filters = load_filters()
 
@@ -43,6 +43,9 @@ def determine_category(directory_name, manual_id=None):
                     return category_info['name'], str(int(manual_id))
         raise ValueError(f"Invalid category ID {manual_id}; see {FILTERS_PATH}")
 
+    folder = Path(directory) if directory else Path(config.get('Paths','DATADIR')) / directory_name
+    if folder.is_dir() and any(p.is_file() and p.suffix.lower()=='.mp3' for p in folder.iterdir()):
+        return 'Music/MP3', '22'
     name = str(directory_name)
     print(f"{bcolors.YELLOW}Find the correct category\n{bcolors.ENDC}")
 

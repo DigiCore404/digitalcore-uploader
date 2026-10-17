@@ -12,10 +12,14 @@ ROOT = Path(__file__).resolve().parents[1]
 def quote(value):
     return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"').replace('%', '%%') + '"'
 
-def unit(root, python, host, port):
+def unit(root, python, host, port, tls_cert=None, tls_key=None):
     ipaddress.ip_address(host)
     if not 1024 <= port <= 65535:
         raise ValueError('Choose an unprivileged port between 1024 and 65535.')
+    tls=''
+    if tls_cert or tls_key:
+        if not tls_cert or not tls_key:raise ValueError('Supply both TLS certificate and key.')
+        tls=' --tls-cert '+quote(Path(tls_cert).resolve())+' --tls-key '+quote(Path(tls_key).resolve())
     return f'''[Unit]
 Description=DigitalCore Uploader (headless browser service)
 After=network-online.target
@@ -24,7 +28,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory={quote(root)}
-ExecStart={quote(python)} {quote(root / 'uploader.py')} web --host {host} --port {port} --no-browser
+ExecStart={quote(python)} {quote(root / 'uploader.py')} web --host {host} --port {port} --no-browser{tls}
 Restart=on-failure
 RestartSec=5
 UMask=0077
@@ -42,6 +46,8 @@ def main():
     parser.add_argument('action',choices=['install','start','stop','status'])
     parser.add_argument('--host',default='127.0.0.1',help='Bind address; use the server LAN IP for remote browser access')
     parser.add_argument('--port',default=6080,type=int)
+    parser.add_argument('--tls-cert')
+    parser.add_argument('--tls-key')
     args=parser.parse_args()
     if sys.platform != 'linux' or not shutil.which('systemctl'):
         parser.error('This installer needs Linux with systemd. On Synology use the supplied Docker service.')
@@ -54,7 +60,7 @@ def main():
         directory=Path(os.environ.get('XDG_CONFIG_HOME') or Path.home()/'.config')/'systemd/user'
         directory.mkdir(parents=True,exist_ok=True)
         path=directory/name
-        path.write_text(unit(ROOT,python,args.host,args.port),encoding='utf-8');path.chmod(0o600)
+        path.write_text(unit(ROOT,python,args.host,args.port,args.tls_cert,args.tls_key),encoding='utf-8');path.chmod(0o600)
         subprocess.run(['systemctl','--user','daemon-reload'],check=True)
         subprocess.run(['systemctl','--user','enable','--now',name],check=True)
         print('Headless service installed. Read first-run login with: journalctl --user -u '+name+' -n 30')

@@ -124,6 +124,9 @@ def validate_job(source, cat, description='', images=(), metadata=None, config=N
         raise ValueError('Choose a release folder containing your media, images and optional NFO.')
     if not any(p.is_file() for p in path.rglob('*')):
         raise ValueError('The selected release folder is empty.')
+    if cat is None:
+        from utils.category_utils import determine_category
+        cat = int(determine_category(path.name, directory=path)[1])
     if cat not in {row['id'] for row in categories()}:
         raise ValueError('Choose a DigitalCore category.')
     urls = [url.strip() for url in images if url.strip()]
@@ -371,10 +374,16 @@ def main():
     sub.add_parser('check', help='Check settings, dependencies and folder write access; no network calls')
     upload = sub.add_parser('upload', help='Upload one release folder')
     upload.add_argument('folder')
-    upload.add_argument('--cat', '-cat', type=int, required=True)
+    upload.add_argument('--cat', '-cat', type=int)
     for field in ('studio', 'performers', 'genre', 'year', 'language', 'description'):
         upload.add_argument('--' + field, default='')
     upload.add_argument('--image', action='append', default=[])
+    upload.add_argument('--imdb', default='')
+    upload.add_argument('--game-url', default='')
+    staging = upload.add_mutually_exclusive_group()
+    staging.add_argument('-l','--ln', action='store_const', dest='stage_mode', const='link')
+    staging.add_argument('-c','--cp', action='store_const', dest='stage_mode', const='copy')
+    staging.add_argument('-m','--mv', action='store_const', dest='stage_mode', const='move')
     upload.add_argument('--dry-run', action='store_true', help='Review only, without uploading or hashing')
     completion = sub.add_parser('completed', parents=[upload], add_help=False,
                                 help='One-shot qBittorrent completion callback for a release folder')
@@ -407,9 +416,14 @@ def main():
             raise ValueError('Choose a valid category ID from files/digitalcore-categories.json.')
         watch(config, args.cat, args.interval, args.stable, args.folder)
         return 0
+    if args.stage_mode and not args.dry_run:
+        from utils.cli_sources import stage
+        args.folder = stage(args.folder, config, args.stage_mode)
+    elif args.stage_mode and args.dry_run:
+        print('Dry run: staging '+args.stage_mode+' was not performed.')
     job = validate_job(args.folder, args.cat, args.description, args.image,
                        dict(studio=args.studio, performers=args.performers, content_tags=args.genre,
-                            release_year=args.year, language=args.language), config)
+                            release_year=args.year, language=args.language, imdbId=args.imdb, gameUrl=args.game_url), config)
     print(review_text(job, config))
     if args.dry_run:
         print('\nDry run complete. No network calls, torrent creation or upload.')

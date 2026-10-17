@@ -9,6 +9,7 @@ def prepare_source(directory,log_path):
     archives=find_rar_files(directory,limit=10000)
     if not archives:return directory,None
     config=ConfigLoader().get_config()
+    if config.get('UnrarUpload','MODE',fallback='original_only')=='original_only':return directory,None
     if not config.getboolean('UnrarUpload','ENABLED',fallback=False):
         raise RuntimeError('RAR source detected but unpacking is disabled. Packed uploads are forbidden.')
     first=[]
@@ -27,4 +28,4 @@ def prepare_source(directory,log_path):
 
 def assert_unpacked_torrent(torrent):
     bad=[str(p) for p in torrent.files if is_archive_path(p)]
-    if bad:raise RuntimeError('Packed torrent blocked: unpack the RAR source first.')
+    if bad and ConfigLoader().get_config().get('UnrarUpload','MODE',fallback='original_only')!='original_only':raise RuntimeError('Packed torrent blocked: unpack the RAR source first.')

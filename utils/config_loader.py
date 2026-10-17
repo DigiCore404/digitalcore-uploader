@@ -17,6 +17,8 @@ class ConfigLoader:
             config.read(root / 'defaults.ini', encoding='utf-8')
             if not config.read(config_path, encoding='utf-8'):
                 raise ValueError(f'Configuration missing: {config_path}. Copy config.example.ini to config.ini.')
+            if not config.get('TMDB','TOKEN',fallback='').strip() and config.get('TMDB','APIKEY',fallback='').strip():
+                config.set('TMDB','TOKEN',config.get('TMDB','APIKEY'))
             config.remove_section('PussyTorrents')
             for key in ('DATADIR', 'WATCHFOLDER', 'TMP_DIR', 'TEMPLATE_PATH', 'FILTERS', 'UPLOADLOG'):
                 value = Path(config.get('Paths', key)).expanduser()

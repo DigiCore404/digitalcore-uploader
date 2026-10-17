@@ -7,7 +7,7 @@ API='https://api.igdb.com/v4/games'
 AUTH='https://id.twitch.tv/oauth2/token'
 _cache={}
 _lock=threading.Lock()
-FIELDS='name,summary,storyline,first_release_date,url,cover.url,genres.name,platforms.name,involved_companies.company.name,websites.url'
+FIELDS='name,summary,storyline,first_release_date,url,cover.url,genres.name,platforms.name,involved_companies.company.name,websites.url,screenshots.url'
 
 def access_token(client_id,client_secret):
  if not client_id or not client_secret:raise ValueError('Add your IGDB / Twitch Client ID and Client secret in Settings first.')
@@ -53,6 +53,10 @@ def normalize(row):
  if cover.startswith('//'):cover='https:'+cover
  images=[]
  if urlparse(cover).scheme=='https' and urlparse(cover).hostname=='images.igdb.com':images=[cover.replace('/t_thumb/','/t_cover_big/')]
+ for shot in (row.get('screenshots') or [])[:3]:
+  image=str(shot.get('url') or '')
+  if image.startswith('//'):image='https:'+image
+  if urlparse(image).scheme=='https' and urlparse(image).hostname=='images.igdb.com':images.append(image.replace('/t_thumb/','/t_screenshot_big/'))
  description=str(row.get('summary') or '')[:20000]
  if row.get('storyline') and row['storyline']!=description:description+='\n\n'+str(row['storyline'])[:10000]
  platforms=names(row.get('platforms') or [])

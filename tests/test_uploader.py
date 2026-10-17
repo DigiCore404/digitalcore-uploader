@@ -39,6 +39,9 @@ WATCHFOLDER = {self.root / 'watch'}
 TMP_DIR = {self.root / 'tmp'}
 UPLOADLOG = {self.root / 'logs' / 'upload.log'}
 [Settings]
+CHECK_UPDATES = false
+IMDB = false
+GAME_INFO = false
 SCREENSHOTS = false
 MEDIAINFO = false
 IMAGE_UPLOAD = false
@@ -194,6 +197,26 @@ TorrentDownloadRetryDelay = 0
             config_file.write(f'\n[ImageHost]\nPROVIDER = custom\nUPLOADIMGURL = http://127.0.0.1:{server.server_port}/api/v1/images/upload\n')
         self.config = uploader.load_config()
         return state
+
+    def test_worker_automatically_looks_up_and_posts_imdb(self):
+        state=self.serve()
+        self.cfg.write_text(self.cfg.read_text().replace('IMDB = false','IMDB = true')+'\n[TMDB]\nTOKEN = test-metadata-token\n')
+        code="""import sys
+import uploader
+uploader.check_writable(uploader.load_config())
+from utils import tmdb
+tmdb.search=lambda *args: [{'id':'1','title':'Test Release'}]
+tmdb.detail=lambda *args: {'metadata':{'imdbId':'tt1234567'},'description':'Automatically found plot','images':[]}
+import backend
+sys.argv=['backend.py',sys.argv[1],'--cat','6']
+backend.main()
+"""
+        result=subprocess.run([sys.executable,'-c',code,str(self.release)],cwd=ROOT,env=os.environ.copy(),capture_output=True,text=True,timeout=40)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual(len(state['posts']),1)
+        self.assertEqual(state['posts'][0]['imdbId'],'tt1234567')
+        self.assertIn('Automatically found plot',state['posts'][0]['nfo'])
+        self.assertTrue(list((self.root/'watch').glob('*.torrent')))
 
     def test_full_upload_hash_metadata_download_and_watch_folder(self):
         state = self.serve()

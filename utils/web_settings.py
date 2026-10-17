@@ -8,6 +8,10 @@ DEDICATED|={('Settings',k) for k in ('image_upload','screenshots','mediainfo','d
 TITLES={'MediaTools':'Screenshots & thumbnail sheets','Torrent':'Torrent creation & editing','Settings':'Upload behaviour','UploadForm':'DigitalCore publication','Paths':'Files & folders','ImageHost':'Custom image host','Network':'Network & retries','UnrarUpload':'Archive handling (UNRAR / rar2fs)','Website':'DigitalCore site','SingleFiles':'Single-file uploads'}
 HELP={
  'link_mode':'Hardlink: no duplicate data, requires the same filesystem. Softlink: a relative link; the original file must remain available to the uploader and seeding client. The release folder is created beside the original file, which stays in place.',
+ 'imdb':'Automatically find IMDb through TMDB, or TVmaze for TV, when no IMDb ID was supplied or found in the NFO.',
+ 'game_info':'Automatically retrieve IGDB game descriptions, covers and screenshots when no game URL was supplied.',
+ 'check_updates':'Check the new uploader repository for a newer release when starting an upload.',
+ 'rar2fs_screenshots':'Temporarily mount packed RAR releases for screenshots without changing the uploaded files.',
  'nsfw':'Mark images as adult on imghost.dev. Leave off for ordinary DigitalCore releases.',
  'screenshot_sheet':'Generate one MTN thumbnail sheet with multiple frames. Requires MTN.',
  'screenshot_singles':'Number of separate screenshots, in addition to the MTN sheet (0–12). FFmpeg needs at least 1.',
@@ -40,7 +44,7 @@ HELP={
  'verify_ssl':'Verify HTTPS certificates for tracker/image requests.', 'useragent':'HTTP User-Agent sent by the uploader.',
  'siteurl':'Base HTTP(S) website URL.', 'cookie':'Optional source-site session cookie. Blank keeps the saved secret.',
  'enabled':'Mount RAR releases with rar2fs and upload the unpacked media. Requires host FUSE support and the UNRAR Compose override.',
- 'mode':'Use unpacked_only to upload extracted media. Imported archive torrents need new hashes for the unpacked files.',
+ 'mode':'original_only preserves the original RAR payload; temporary preview mounts can generate screenshots. unpacked_only uploads extracted media and needs new torrent hashes.',
  'title_suffix':'Optional suffix appended to the release title.', 'title_separator':'Separator before the archive title suffix.',
  'rar2fs_bin':'rar2fs executable on this server.', 'mount_options':'Arguments passed to rar2fs for archive mounts.',
  'mount_base':'Server directory containing archive mounts.', 'categories':'Comma-separated categories eligible for archive processing; empty uses the backend defaults.',

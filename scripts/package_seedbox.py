@@ -18,7 +18,7 @@ VERSION='3.0.0'
 def entries():
     names=['defaults.ini','requirements.txt','requirements.lock.txt','uploader.py',
            'web.py','backend.py','install.sh','start.sh','start-web.sh',
-           'scripts/service.py','scripts/upload.sh','scripts/build-archive-tools.sh','scripts/install-mkbrr.py']
+           'scripts/service.py','scripts/tls.py','scripts/upload.sh','scripts/build-archive-tools.sh','scripts/install-mkbrr.py']
     names += [p.relative_to(ROOT).as_posix() for p in sorted((ROOT/'utils').glob('*.py'))]
     names += [p.relative_to(ROOT).as_posix() for p in sorted((ROOT/'webui').iterdir()) if p.is_file()]
     names += ['files/template.txt','files/filters.json','files/digitalcore-categories.json']

@@ -5,11 +5,13 @@ umask 077
 SYSTEM_DEPS=0
 SERVICE=0
 ARCHIVE=0
+DOMAIN=
+HTTPS=0
 PYTHON=python3
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --help|-h)
-      echo 'Usage: bash install.sh [--python /path/to/python3] [--system-deps] [--service] [--rar2fs]'
+      echo 'Usage: bash install.sh [--python /path/to/python3] [--system-deps] [--service] [--rar2fs] [--https] [--domain HOSTNAME]'
       echo 'Default: install into .venv as your ordinary seedbox user; preserve config.ini.'
       echo '--system-deps: explicitly install Debian/Ubuntu Python and media tools using sudo/root.'
       echo '--service: optionally install/start a systemd user service on 127.0.0.1:6080.'
@@ -18,6 +20,8 @@ while [[ $# -gt 0 ]]; do
     --system-deps) SYSTEM_DEPS=1; shift ;;
     --service) SERVICE=1; shift ;;
     --rar2fs) ARCHIVE=1; shift ;;
+    --https) HTTPS=1; shift ;;
+    --domain|-d) [[ $# -ge 2 ]] || { echo '--domain needs a hostname.' >&2; exit 2; }; DOMAIN="$2"; HTTPS=1; shift 2 ;;
     --python) [[ $# -ge 2 ]] || { echo '--python needs an executable path.' >&2; exit 2; }; PYTHON="$2"; shift 2 ;;
     *) echo "Unknown option: $1. Use --help." >&2; exit 2 ;;
   esac
@@ -31,7 +35,7 @@ if [[ $SYSTEM_DEPS -eq 1 ]]; then
   SUDO=()
   if [[ $EUID -ne 0 ]]; then SUDO=(sudo); fi
   "${SUDO[@]}" apt-get update
-  "${SUDO[@]}" apt-get install -y python3 python3-venv ffmpeg mediainfo
+  "${SUDO[@]}" apt-get install -y python3 python3-venv ffmpeg mediainfo openssl
   if [[ $ARCHIVE -eq 1 ]]; then "${SUDO[@]}" apt-get install -y build-essential autoconf automake libtool pkg-config libfuse-dev fuse curl ca-certificates; fi
 fi
 command -v "$PYTHON" >/dev/null || { echo 'Python is missing. Use --python /path/to/python3 or ask your provider for Python 3.10+.' >&2; exit 1; }
@@ -66,4 +70,10 @@ echo 'Check: bash start.sh check'
 echo 'Browser service: bash start.sh web --host 127.0.0.1 --port 6080 --no-browser'
 echo 'PC access: ssh -L 6080:127.0.0.1:6080 your-user@seedbox.example.com'
 echo 'Then open http://127.0.0.1:6080 on your PC. No uploads start during installation.'
-if [[ $SERVICE -eq 1 ]]; then .venv/bin/python scripts/service.py install --host 127.0.0.1 --port 6080; fi
+TLS_ARGS=()
+if [[ $HTTPS -eq 1 ]]; then
+  .venv/bin/python scripts/tls.py "${DOMAIN:-localhost}"
+  TLS_ARGS=(--tls-cert "$PWD/certificates/cert.pem" --tls-key "$PWD/certificates/key.pem")
+  echo 'HTTPS: bash start.sh web --tls-cert certificates/cert.pem --tls-key certificates/key.pem'
+fi
+if [[ $SERVICE -eq 1 ]]; then .venv/bin/python scripts/service.py install --host 127.0.0.1 --port 6080 "${TLS_ARGS[@]}"; fi

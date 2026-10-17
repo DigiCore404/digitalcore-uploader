@@ -120,6 +120,9 @@ def main():
         manual_cat_id = args.cat
 
         print_section("Header", program_version)
+        if config.getboolean('Settings','CHECK_UPDATES',fallback=True):
+            from utils.update_check import check
+            check(program_version)
 
         print(f"\n{bcolors.OKBLUE}Starting upload script...{bcolors.ENDC}")
 
@@ -228,7 +231,7 @@ def main():
                 if duplicate_found:
                     job_event(stage='duplicate', site_status='duplicate')
                     log("Duplicate found. Skipping further operations.", log_file_path)
-                    category_name, category_id_str = determine_category(directory_name, manual_id=manual_cat_id)
+                    category_name, category_id_str = determine_category(directory_name, manual_id=manual_cat_id, directory=directory)
                     category_id = int(category_id_str)
                     upload_details['category'] = f"{category_name} ({category_id})"
 
@@ -280,19 +283,33 @@ def main():
         print_section("Category")
 
         # --- Updated call to pass manual_category_id ---
-        category_name, category_id_str = determine_category(directory_name, manual_id=manual_cat_id)
+        category_name, category_id_str = determine_category(directory_name, manual_id=manual_cat_id, directory=directory)
         category_id = int(category_id_str)  # Convert category_id to integer
         # -----------------------------------------------
 
         upload_details['category'] = f"{category_name} ({category_id})"
         update_upload_status(name=directory_name, new_status='uploading', size=f'{upload_details["size"]}', category=f'{category_name}')
 
+        from utils.automatic_metadata import enrich, rehost_images
+        job, metadata_images = enrich(directory, category_id, job, config)
+        if metadata_images and image_upload_enabled:
+            job['images'] = rehost_images(metadata_images, config)
+
         # Initialize replacements dictionary with version info.
         replacements = {'!version!': program_version, '!description!': job.get('description', ''),
                         '!imageupload!': '', '!screenshots!': '', '!nfo!': ''}
+        template_text = template_path.read_text(encoding='utf-8')
+        replacements['!gameinfo!'] = ''
+        replacements['!gameimage!'] = ''
+        if job.get('_automatic_game') and '!gameinfo!' in template_text:
+            replacements['!gameinfo!'] = job.get('description','')
+            replacements['!description!'] = ''
         manual_images = job.get('images', [])
         if manual_images:
             replacements['!imageupload!'] = '\n'.join(f'[c][img]{url}[/img][/c]' for url in manual_images)
+            if job.get('_automatic_game') and '!gameimage!' in template_text:
+                replacements['!gameimage!'] = replacements['!imageupload!']
+                replacements['!imageupload!'] = ''
         
         ### Screenshots processing section
         if screenshots_enabled:
