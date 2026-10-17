@@ -103,6 +103,9 @@ class Workspace:
         self.history = JobHistory(database_path, legacy_path=database_path.with_name('web-history.json'))
         config = uploader.load_config()
         self.security = Security(self.history, password, os.environ.get('DIGITALCORE_WEB_USERNAME') or config.get('Web', 'USERNAME', fallback='admin'), config.get('Web', 'ALLOWED_IPS', fallback=''))
+        if self.security.consume_ini_login(uploader.config_path()):
+            config.set('Web', 'PASSWORD', '')
+            print('Workspace login updated from config.ini; the one-time PASSWORD has been cleared.', flush=True)
         try:
             with uploader.upload_lock():
                 self.history.recover_interrupted()
@@ -569,6 +572,8 @@ def create_server(host='127.0.0.1', port=6080, password=None, history_path=None)
     server.workspace = Workspace(password, history_path)
     if generated_password and server.workspace.security.created:
         print(f'Initial workspace login: {server.workspace.security.state()["username"]} / {password}', flush=True)
+    elif not server.workspace.security.created:
+        print('Using the saved workspace login. Forgotten password? Stop the web service, run bash start.sh reset-password, then restart.', flush=True)
     return server
 
 

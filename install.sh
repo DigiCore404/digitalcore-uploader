@@ -75,6 +75,8 @@ PY
 echo 'Next: edit config.ini (DigitalCore API_KEY, ANNOUNCEURL and your media/watch paths).'
 echo 'Check: bash start.sh check'
 echo 'Browser service: bash start.sh web --host 127.0.0.1 --port 6080 --no-browser'
+echo 'Workspace login: first web startup prints the generated password. With --service it appears in journalctl --user -u digitalcore-uploader.service.'
+echo 'Choose or recover your workspace password: bash start.sh reset-password (stop the web service first, then restart it).'
 echo 'PC access: ssh -L 6080:127.0.0.1:6080 your-user@seedbox.example.com'
 echo 'Then open http://127.0.0.1:6080 on your PC. No uploads start during installation.'
 TLS_ARGS=()
