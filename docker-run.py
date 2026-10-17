@@ -14,18 +14,18 @@ def command(args, config):
               (str(uploader.ROOT / 'data'), '/app/data', False),
               (str(uploader.ROOT / 'tmp'), '/app/tmp', False),
               (str(uploader.ROOT / 'logs'), '/app/logs', False)]
-    result = ['docker', 'run', '--rm', '--init']
+    result = ['docker', 'run', '--rm', '--init', '--env', 'DIGITALCORE_CONFIG=/app/config.ini', '--env', 'DIGITALCORE_CONTAINER=1']
     if os.name != 'nt' and hasattr(os, 'getuid'):
         result += ['--user', f'{os.getuid()}:{os.getgid()}']
     for host, target, readonly in mounts:
         result += ['--mount', f'type=bind,source={host},target={target}' + (',readonly' if readonly else '')]
-    if args and args[0] == 'upload' and len(args) > 1:
-        source = Path(args[1]).expanduser()
-        if source.is_absolute():
-            source = source.resolve().relative_to(Path(config.get('Paths', 'DATADIR')).resolve())
-        if '..' in source.parts:
-            raise ValueError('Docker uploads must be inside DATADIR.')
-        args = ['upload', '/content/' + source.as_posix(), *args[2:]]
+    args=list(args)
+    source_index=1 if args and args[0] in ('upload','completed') and len(args)>1 else args.index('--folder')+1 if args and args[0]=='watch' and '--folder' in args else None
+    if source_index is not None:
+        source=Path(args[source_index]).expanduser()
+        if source.is_absolute():source=source.resolve().relative_to(Path(config.get('Paths','DATADIR')).resolve())
+        if '..' in source.parts:raise ValueError('The release must be inside DATADIR for Docker.')
+        args[source_index]='/content/'+source.as_posix()
     if not args or args[0] in ('gui', 'web'):
         raise ValueError('Use Docker Compose for the browser interface. This helper runs check, upload or watch.')
     return result + ['digitalcore-uploader:local'] + args

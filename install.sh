@@ -7,6 +7,7 @@ SERVICE=0
 ARCHIVE=0
 DOMAIN=
 HTTPS=0
+NEW_CONFIG=0
 PYTHON=python3
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -50,6 +51,7 @@ fi
 if [[ $ARCHIVE -eq 1 ]]; then bash scripts/build-archive-tools.sh "$PWD/tools/archive"; fi
 if [[ ! -e config.ini ]]; then
   (umask 077; cp config.example.ini config.ini)
+  NEW_CONFIG=1
 fi
 chmod 600 config.ini
 mkdir -p content/incoming watch tmp data logs
@@ -65,6 +67,11 @@ if [[ $MISSING -ne 0 ]]; then
   echo 'Installation needs media tools before the default upload configuration is ready. Rerun after installing them.' >&2
   exit 1
 fi
+.venv/bin/python - "$NEW_CONFIG" <<'PY'
+import sys
+from utils.native_setup import configure
+configure('config.ini',new=sys.argv[1]=='1')
+PY
 echo 'Next: edit config.ini (DigitalCore API_KEY, ANNOUNCEURL and your media/watch paths).'
 echo 'Check: bash start.sh check'
 echo 'Browser service: bash start.sh web --host 127.0.0.1 --port 6080 --no-browser'

@@ -100,7 +100,7 @@ class RestoredCliTests(unittest.TestCase):
  def test_rar_preview_unmounts_without_touching_original(self):
   from utils import rar_preview
   (self.release/'release.rar').write_bytes(b'original archive')
-  with patch.object(rar_preview,'iter_media_files',return_value=[]),patch.object(rar_preview,'run_mount_command') as mount,patch.object(rar_preview.os.path,'ismount',return_value=True),patch.object(rar_preview,'unmount_path',return_value=True) as unmount:
+  with patch.object(rar_preview,'iter_media_files',return_value=[]),patch.object(rar_preview,'run_mount_command') as mount,patch.object(rar_preview,'preview_error',return_value=''),patch.object(rar_preview.os.path,'ismount',return_value=True),patch.object(rar_preview,'unmount_path',return_value=True) as unmount:
    with rar_preview.media_directory(self.release,30,self.config) as view:self.assertNotEqual(view,self.release)
   mount.assert_called_once();unmount.assert_called_once();self.assertEqual((self.release/'release.rar').read_bytes(),b'original archive')
  def test_real_self_signed_certificate_can_be_loaded(self):

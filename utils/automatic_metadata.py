@@ -46,8 +46,12 @@ def enrich(directory, category, job, config):
         else:
             token=config.get('TMDB','TOKEN',fallback='') or config.get('TMDB','APIKEY',fallback='')
             if token:
-                selected=_choose(tmdb.search(token,title,kind),title,local.get('release_year'))
-                if selected:selected=tmdb.detail(token,selected['id'],kind)
+                try:
+                    selected=_choose(tmdb.search(token,title,kind),title,local.get('release_year'))
+                    if selected:selected=tmdb.detail(token,selected['id'],kind)
+                except ValueError:
+                    if kind!='tv':raise
+                    print('TMDB unavailable; trying TVmaze for this series.',flush=True)
             if kind=='tv' and not (selected or {}).get('metadata',{}).get('imdbId'):
                 fallback=_choose(tvmaze.search(title),title,local.get('release_year'))
                 if fallback:selected=tvmaze.detail(fallback['id'])
