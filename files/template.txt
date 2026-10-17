@@ -7,3 +7,5 @@
 !screenshots!
 
 !nfo!
+
+[url=https://github.com/DigiCore404/digitalcore-uploader]Created by DigitalCore Uploader v!version![/url]
