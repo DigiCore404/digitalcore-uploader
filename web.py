@@ -213,6 +213,8 @@ class Workspace:
                 value = str(data['import_local_root']).strip()
                 effective = uploader.load_config() if os.environ.get('DIGITALCORE_CONTAINER') == '1' else config
                 config.set('Imports', 'LOCAL_ROOT', str(content_path(value, effective)) if value else effective.get('Paths', 'DATADIR'))
+            if not isinstance(data.get('options', {}), dict):
+                raise ValueError('Options must be an object.')
             for key, value in data.get('options', {}).items():
                 if key in OPTIONS and isinstance(value, bool):
                     config.set('Settings', key, str(value).lower())
@@ -392,7 +394,10 @@ class Handler(BaseHTTPRequestHandler):
                           '/favicon.ico': ('favicon.ico', 'image/x-icon'),
                           '/apple-touch-icon.png': ('apple-touch-icon.png', 'image/png'),
                           '/logo-light.svg': ('logo-light.svg', 'image/svg+xml')}[path]
-            return self.send((ASSETS / name).read_bytes(), mime=mime)
+            try:
+                return self.send((ASSETS / name).read_bytes(), mime=mime)
+            except FileNotFoundError:
+                return self.send({'error': 'Not found.'}, 404)
         session = self.session()
         if not session:
             return self.send({'error': 'Please sign in.'}, 401)
@@ -556,7 +561,7 @@ class Handler(BaseHTTPRequestHandler):
                 workspace.sessions.pop(cookie['dc_uploader_session'].value, None)
                 return self.send({'ok': True}, cookie='dc_uploader_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
             return self.send({'error': 'Not found.'}, 404)
-        except (OSError, ValueError, TypeError, KeyError, configparser.Error, sqlite3.Error) as exc:
+        except (OSError, ValueError, TypeError, KeyError, AttributeError, configparser.Error, sqlite3.Error) as exc:
             return self.send({'error': str(exc)}, 400)
 
 
