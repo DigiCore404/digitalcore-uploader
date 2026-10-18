@@ -21,7 +21,7 @@ def load_filters():
 
 def _search_any(patterns, name):
     return any(
-        pattern.strip() and re.search(pattern, name, re.IGNORECASE)
+        re.search(pattern, name, re.IGNORECASE)
         for pattern in patterns or []
     )
 

@@ -194,7 +194,7 @@ TorrentDownloadRetryDelay = 0
         if mode in ('duplicate', 'bad-dupe-check'):
             self.cfg.write_text(self.cfg.read_text().replace('DUPECHECK = false', 'DUPECHECK = true'))
         with self.cfg.open('a') as config_file:
-            config_file.write(f'\n[ImageHost]\nPROVIDER = custom\nUPLOADIMGURL = http://127.0.0.1:{server.server_port}/api/v1/images/upload\n')
+            config_file.write('\n[ImageHost]\nPROVIDER = digitalcore\n')
         self.config = uploader.load_config()
         return state
 
@@ -285,7 +285,17 @@ backend.main()
         self.cfg.write_text(self.cfg.read_text().replace('IMAGE_UPLOAD = false', 'IMAGE_UPLOAD = true'))
         self.config = uploader.load_config()
         output = []
-        self.assertEqual(uploader.run_job(self.job(), self.config, output.append), 0, '\n'.join(output))
+        command = uploader.backend_command
+        endpoint = self.config.get('Website', 'SITEURL') + '/api/v1/images/upload'
+        def local_image_host(job, job_path):
+            args = command(job, job_path)
+            bootstrap = ("from utils import digitalcore_images; "
+                         f"digitalcore_images.ENDPOINT={endpoint!r}; "
+                         "digitalcore_images.authentication=lambda config: 'test-public-key'; "
+                         "import runpy,sys; sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name='__main__')")
+            return args[:2] + ['-c', bootstrap] + args[2:]
+        with patch.object(uploader, 'backend_command', side_effect=local_image_host):
+            self.assertEqual(uploader.run_job(self.job(), self.config, output.append), 0, '\n'.join(output))
         self.assertEqual(state['images'], 1)
         self.assertIn('https://example.invalid/uploaded.jpg', state['posts'][0]['nfo'])
 

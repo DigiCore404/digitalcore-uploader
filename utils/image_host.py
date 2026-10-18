@@ -7,8 +7,7 @@ MAX_IMAGE=8*1024*1024
 
 def provider(config):
     value=config.get('ImageHost','PROVIDER',fallback='').strip().lower()
-    return value or 'digitalcore'
-
+    return value if value in ('digitalcore','imghost','imgbb') else 'digitalcore'
 
 def identify(raw):
     if not 0<len(raw)<=MAX_IMAGE:raise ValueError('Choose an image up to 8 MB.')
@@ -37,8 +36,6 @@ def post(config,filename,raw):
         key=config.get('ImageHost','API_KEY',fallback='').strip()
         if not key:raise ValueError('Add your ImgBB API key in Settings first.')
         headers={};field='image';data={'key':key,'name':filename.rsplit('.',1)[0]}
-    elif name=='custom':
-        endpoint=config.get('ImageHost','UPLOADIMGURL');headers={'Authorization':config.get('ImageHost','AUTHCODE',fallback='')};field='file'
     else:raise ValueError('Choose a supported image host.')
     with requests.Session() as session:
         session.trust_env=False
