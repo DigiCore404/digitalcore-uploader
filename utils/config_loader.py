@@ -24,7 +24,7 @@ class ConfigLoader:
                 value = Path(config.get('Paths', key)).expanduser()
                 config.set('Paths', key, str(value if value.is_absolute() else root / value))
             if config.get('ImageHost','PROVIDER',fallback='digitalcore').strip() != 'custom' and not config.get('ImageHost', 'UPLOADIMGURL', fallback='').strip():
-                config.set('ImageHost', 'UPLOADIMGURL', 'https://imghost.dev/api/1/upload' if config.get('ImageHost','PROVIDER',fallback='digitalcore')=='imghost' else 'https://img.digitalcore.club/api/upload')
+                config.set('ImageHost', 'UPLOADIMGURL', 'https://api.imgbb.com/1/upload' if config.get('ImageHost','PROVIDER',fallback='').strip()=='imgbb' else 'https://imghost.dev/api/1/upload' if config.get('ImageHost','PROVIDER',fallback='digitalcore')=='imghost' else 'https://img.digitalcore.club/api/upload')
             if os.environ.get('DIGITALCORE_CONTAINER') == '1':
                 for key, value in {'DATADIR': '/content', 'WATCHFOLDER': '/watch', 'TMP_DIR': '/app/tmp',
                                    'UPLOADLOG': '/app/logs/upload.log'}.items():
