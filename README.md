@@ -51,14 +51,13 @@ allows partial previews and logs the failed videos.
 
 ## Install
 
-For Docker or Synology, you need Linux x86_64 and Docker Compose (Container Manager
-on Synology).
+Install [Docker Engine with Compose v2](https://docs.docker.com/engine/install/)
+on Linux x86_64.
 
 ```bash
 git clone https://github.com/DigiCore404/digitalcore-uploader.git
 cd digitalcore-uploader
-docker build --target release -t digitalcore-uploader:local .
-bash setup.sh --media /srv/media --image digitalcore-uploader:local --bind 0.0.0.0
+bash setup.sh --media /srv/media --image ghcr.io/digicore404/digitalcore-uploader:latest --bind 0.0.0.0
 ```
 
 Replace `/srv/media` with your media folder. When running as root, also pass your
@@ -66,7 +65,7 @@ normal account's `--uid` and `--gid`.
 
 Open `http://<server-ip>:6080` and sign in with the login shown during installation.
 
-[Docker and Synology setup](README-docker.md) · [Linux seedbox setup](SEEDBOX-INSTALL.md)
+[Docker setup](README-docker.md) · [Linux seedbox setup](SEEDBOX-INSTALL.md)
 
 ## Upload
 

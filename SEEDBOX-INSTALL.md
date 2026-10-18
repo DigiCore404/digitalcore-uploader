@@ -8,7 +8,7 @@ Based on the existing DigitalCore/DC Uploader backend; attribution remains in th
 Upload the package to a folder you own on the seedbox, then connect over SSH:
 
 ```bash
-tar -xzf digitalcore-uploader-seedbox-3.0.0.tar.gz
+tar -xzf digitalcore-uploader-seedbox-3.1.1.tar.gz
 cd digitalcore-uploader-seedbox
 bash install.sh
 ```
