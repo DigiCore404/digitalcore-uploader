@@ -1,31 +1,17 @@
-"""Screenshot generation using the configured FFmpeg or MTN engine."""
+"""Screenshot generation shared by browser uploads and CLI workers."""
 import json
-import os
 import subprocess
 from pathlib import Path
 from utils.config_loader import ConfigLoader
-from utils.mediainfo_utils import iter_media_files, media_priority, is_sample_path
+from utils.screenshot_batch import generate_batch
 
 
 def generate_screenshots(directory, category_id):
-    from utils.rar_preview import media_directory
     config = ConfigLoader().get_config()
+    from utils.rar_preview import media_directory
     with media_directory(directory, category_id, config) as view:
-        files=sorted(iter_media_files(view),key=media_priority)
-        main=[p for p in files if not is_sample_path(p)]
-        samples=[p for p in files if is_sample_path(p)]
-        candidates=main+(samples if config.getboolean('Settings','SCREENSHOT_SAMPLE_FALLBACK',fallback=True) else [])
-        if not candidates:
-            print('No eligible video found; screenshots skipped.')
-            return
-        target=Path(config.get('Paths','TMP_DIR'))/str(os.getpid())/'screens'
-        target.mkdir(parents=True,exist_ok=True)
-        for source in candidates:
-            try:return generate_candidate(source,target,config)
-            except (OSError,ValueError,KeyError,RuntimeError,subprocess.SubprocessError):
-                for image in target.glob('*.jpg'):image.unlink()
-                print('Screenshot generation failed for '+source.name+'; trying the next video.',flush=True)
-        raise RuntimeError('Screenshots failed for every eligible video.')
+        return generate_batch(view, config, generate_candidate)
+
 
 def generate_candidate(source,target,config):
     probe = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
@@ -34,7 +20,7 @@ def generate_candidate(source,target,config):
     duration = float(json.loads(probe.stdout)['format']['duration'])
     if duration <= 0:
         raise ValueError('Video duration is not valid.')
-    target = Path(config.get('Paths', 'TMP_DIR')) / str(os.getpid()) / 'screens'
+    target = Path(target)
     target.mkdir(parents=True, exist_ok=True)
     engine=config.get('MediaTools','SCREENSHOT_ENGINE',fallback='ffmpeg').strip().lower()
     if engine=='mtn':
