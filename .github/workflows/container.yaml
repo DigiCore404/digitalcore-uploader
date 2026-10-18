@@ -29,6 +29,7 @@ jobs:
           docker run --rm --user 1000:1000 --tmpfs /app/data:uid=1000,gid=1000 --tmpfs /app/tmp:uid=1000,gid=1000 --tmpfs /app/dist:uid=1000,gid=1000 --entrypoint python digitalcore-test -m unittest discover -s tests -v
           node tests/test_search_name.cjs
           node tests/test_activity_navigation.cjs
+          node tests/test_updates.cjs
       - name: Build release image
         env:
           REVISION: ${{ github.sha }}

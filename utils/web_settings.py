@@ -7,10 +7,10 @@ DEDICATED={('Website','api_key'),('Torrent','announceurl'),('Torrent','hasher'),
 DEDICATED|={('Settings',k) for k in ('image_upload','screenshots','mediainfo','dupecheck')}
 TITLES={'MediaTools':'Screenshots & thumbnail sheets','Torrent':'Torrent creation & editing','Settings':'Upload behaviour','UploadForm':'DigitalCore publication','Paths':'Files & folders','ImageHost':'Custom image host','Network':'Network & retries','UnrarUpload':'Archive handling (UNRAR / rar2fs)','Website':'DigitalCore site','SingleFiles':'Single-file uploads'}
 HELP={
+ 'check_updates':'Check for new stable releases in the web interface. Only the public uploader repository is queried; no configuration or credentials are sent.',
  'link_mode':'Hardlink: no duplicate data, requires the same filesystem. Softlink: a relative link; the original file must remain available to the uploader and seeding client. The release folder is created beside the original file, which stays in place.',
  'imdb':'Automatically find IMDb through TMDB, or TVmaze for TV, when no IMDb ID was supplied or found in the NFO.',
  'game_info':'Automatically retrieve IGDB game descriptions, covers and screenshots when no game URL was supplied.',
- 'check_updates':'Check the new uploader repository for a newer release when starting an upload.',
  'rar2fs_screenshots':'Temporarily mount packed RAR releases for screenshots without changing the uploaded files.',
  'nsfw':'Mark images as adult on imghost.dev. Leave off for ordinary DigitalCore releases.',
  'screenshot_video_mode':'Automatic (default): all videos for pack categories, one video for other releases. One video: use the first working main video. All videos: create previews for every main video in the release, including subfolders. Sheet and separate screenshot counts apply to each video. Used by both web and CLI.',

@@ -1,0 +1,6 @@
+"""Application identity, independent of saved user configuration."""
+VERSION = "3.1.0"
+NAME = "DigitalCore Uploader"
+SLUG = "digitalcore-uploader"
+REPOSITORY = "DigiCore404/digitalcore-uploader"
+CONTAINER_ENV = "DIGITALCORE_CONTAINER"
