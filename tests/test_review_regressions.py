@@ -130,6 +130,10 @@ def screenshots(*args):
     folder.mkdir(parents=True,exist_ok=True)
     (folder/'frame.gif').write_bytes(base64.b64decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'))
 backend.generate_screenshots=screenshots
+# Keep the real supported host adapter, but send fixture images to our local server.
+from utils import digitalcore_images
+digitalcore_images.ENDPOINT=config.get('Website','SITEURL')+'/api/v1/images/upload'
+digitalcore_images.authentication=lambda config: 'test-public-key'
 sys.argv=['backend.py',sys.argv[1],'--cat',sys.argv[2]]
 backend.main()
 '''

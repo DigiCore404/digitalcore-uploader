@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from utils.screenshot_batch import generate_batch
@@ -154,6 +155,16 @@ class PackPublicationTests(unittest.TestCase):
             config.write(stream)
         config = uploader.load_config()
         output = []
-        self.assertEqual(uploader.run_job(uploader.validate_job(self.release, category, config=config), config, output.append), 0, '\n'.join(output))
+        command = uploader.backend_command
+        endpoint = config.get('Website', 'SITEURL') + '/api/v1/images/upload'
+        def local_image_host(job, job_path):
+            args = command(job, job_path)
+            bootstrap = ("from utils import digitalcore_images; "
+                         f"digitalcore_images.ENDPOINT={endpoint!r}; "
+                         "digitalcore_images.authentication=lambda config: 'test-public-key'; "
+                         "import runpy,sys; sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name='__main__')")
+            return args[:2] + ['-c', bootstrap] + args[2:]
+        with patch.object(uploader, 'backend_command', side_effect=local_image_host):
+            self.assertEqual(uploader.run_job(uploader.validate_job(self.release, category, config=config), config, output.append), 0, '\n'.join(output))
         self.assertEqual(state['images'], 4)
         self.assertIn('https://example.invalid/uploaded.jpg', state['posts'][0]['nfo'])
