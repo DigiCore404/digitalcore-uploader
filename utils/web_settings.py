@@ -13,7 +13,7 @@ HELP={
  'check_updates':'Check the new uploader repository for a newer release when starting an upload.',
  'rar2fs_screenshots':'Temporarily mount packed RAR releases for screenshots without changing the uploaded files.',
  'nsfw':'Mark images as adult on imghost.dev. Leave off for ordinary DigitalCore releases.',
- 'screenshot_video_mode':'One video: use the first working main video. All videos: create previews for every main video in the release, including subfolders. Sheet and separate screenshot counts apply to each video. Used by both web and CLI.',
+ 'screenshot_video_mode':'Automatic (default): all videos for pack categories, one video for other releases. One video: use the first working main video. All videos: create previews for every main video in the release, including subfolders. Sheet and separate screenshot counts apply to each video. Used by both web and CLI.',
  'screenshot_sheet':'Generate one contact sheet per selected video. Requires the MTN engine.',
  'screenshot_singles':'Number of separate screenshots, in addition to the MTN sheet (0–12). FFmpeg needs at least 1.',
  'mtnwidth':'Width of the generated sheet in pixels (320–7680).',
@@ -74,7 +74,7 @@ def schema(config):
    fields.append({'key':key,'label':LABELS.get(key,key.replace('_',' ').capitalize()),'help':HELP.get(key,''),'type':'secret' if secret else kind,'value':'' if secret else value,'saved':bool(value) if secret else False,'locked':locked,'range':RANGES.get(key)})
   if section=='MediaTools':
    for field in fields:
-    if field['key']=='screenshot_video_mode':field['type']='select';field['options']=[{'value':'single','label':'One video'},{'value':'all','label':'All videos (packs / site rips)'}]
+    if field['key']=='screenshot_video_mode':field['type']='select';field['options']=[{'value':'auto','label':'Automatic (packs: all / other: one)'},{'value':'single','label':'One video'},{'value':'all','label':'All videos (packs / site rips)'}]
   if section=='SingleFiles':
    for field in fields:
     if field['key']=='link_mode':field['type']='select';field['options']=[{'value':'hardlink','label':'Hardlink (same filesystem)'},{'value':'softlink','label':'Softlink (relative symbolic link)'}]

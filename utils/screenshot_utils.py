@@ -10,7 +10,7 @@ def generate_screenshots(directory, category_id):
     config = ConfigLoader().get_config()
     from utils.rar_preview import media_directory
     with media_directory(directory, category_id, config) as view:
-        return generate_batch(view, config, generate_candidate)
+        return generate_batch(view, config, generate_candidate, category_id=category_id)
 
 
 def generate_candidate(source,target,config):
