@@ -449,30 +449,14 @@ def upload_torrent(
         }
 
 
-        # Name-derived metadata (studio, performers, release_year,
-        # runtime_minutes, language) - only fields that have a value
+        # Send only fields consumed by DigitalCore's upload endpoint.
         if metadata:
-            allowed = {'studio', 'performers', 'release_year', 'runtime_minutes',
-                       'language', 'content_categories', 'content_tags',
-                       'firstpic', 'backdrop_url', 'othergenre', 'imdbId', 'gameUrl'}
+            allowed = {'language', 'firstpic', 'othergenre', 'imdbId', 'gameUrl'}
             for key, value in metadata.items():
                 if key in allowed and value not in (None, ''):
                     data[key] = value
-            print(f"{bcolors.OKBLUE}Posting metadata: "
-                  + ", ".join(f"{k}={v}" for k, v in data.items() if k in allowed)
-                  + f"{bcolors.ENDC}")
-
-        if metadata:
             if metadata.get('content_tags'):
                 data['othergenre'] = metadata['content_tags']
-            # DigitalCore uses IMDb/game IDs for its own metadata. Keep optional
-            # production/cast information in the description rather than losing it.
-            extras = []
-            for key, label in (('studio', 'Production'), ('performers', 'Cast')):
-                if metadata.get(key):
-                    extras.append(label + ': ' + str(metadata[key]))
-            if extras:
-                data['nfo'] += '\n\n' + '\n'.join(extras)
 
         if len(mediainfo_text) > 0:
             # Add in mediainfo if there is any

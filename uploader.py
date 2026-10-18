@@ -19,7 +19,7 @@ from utils.job_events import PREFIX as EVENT_PREFIX
 ROOT = Path(__file__).resolve().parent
 if os.name == 'nt' and (ROOT / 'tools/mediainfo/MediaInfo.exe').is_file():
     os.environ['PATH'] = str(ROOT / 'tools/mediainfo') + os.pathsep + os.environ.get('PATH', '')
-META_FIELDS = ('studio', 'performers', 'content_tags', 'release_year', 'runtime_minutes', 'language', 'imdbId', 'gameUrl')
+META_FIELDS = ('content_tags', 'language', 'imdbId', 'gameUrl')
 
 
 def load_config():
@@ -144,11 +144,6 @@ def validate_job(source, cat, description='', images=(), metadata=None, config=N
         parsed_game = urlparse(values['gameUrl'])
         if parsed_game.scheme != 'https' or parsed_game.username or parsed_game.password or parsed_game.hostname not in ('store.steampowered.com', 'www.gog.com', 'gog.com', 'www.igdb.com', 'igdb.com'):
             raise ValueError('Use an HTTPS Steam, GOG or IGDB game URL.')
-    if values.get('release_year') and (not values['release_year'].isdigit() or
-                                      not 1900 <= int(values['release_year']) <= 2100):
-        raise ValueError('Release year must be between 1900 and 2100.')
-    if values.get('runtime_minutes') and (not values['runtime_minutes'].isdigit() or not 1 <= int(values['runtime_minutes']) <= 2000):
-        raise ValueError('Runtime must be between 1 and 2000 minutes.')
     return {'source': str(path), 'category': cat, 'description': description.strip(),
             'images': urls, 'metadata': values}
 
@@ -393,7 +388,7 @@ def main():
     upload = sub.add_parser('upload', help='Upload one release folder')
     upload.add_argument('folder')
     upload.add_argument('--cat', '-cat', type=int)
-    for field in ('studio', 'performers', 'genre', 'year', 'language', 'description'):
+    for field in ('genre', 'language', 'description'):
         upload.add_argument('--' + field, default='')
     upload.add_argument('--image', action='append', default=[])
     upload.add_argument('--imdb', default='')
@@ -444,8 +439,7 @@ def main():
     elif args.stage_mode and args.dry_run:
         print('Dry run: staging '+args.stage_mode+' was not performed.')
     job = validate_job(args.folder, args.cat, args.description, args.image,
-                       dict(studio=args.studio, performers=args.performers, content_tags=args.genre,
-                            release_year=args.year, language=args.language, imdbId=args.imdb, gameUrl=args.game_url), config)
+                       dict(content_tags=args.genre, language=args.language, imdbId=args.imdb, gameUrl=args.game_url), config)
     print(review_text(job, config))
     if args.dry_run:
         print('\nDry run complete. No network calls, torrent creation or upload.')

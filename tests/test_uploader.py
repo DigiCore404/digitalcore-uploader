@@ -77,7 +77,9 @@ TorrentDownloadRetryDelay = 0
     def test_validate_review_metadata_and_images(self):
         job = self.job(description='Test description', images=['https://example.invalid/cover.jpg'],
                        metadata={'studio': 'Studio', 'performers': 'A, B', 'content_tags': 'Test', 'password': 'omit'})
-        self.assertEqual(job['metadata']['studio'], 'Studio')
+        self.assertEqual(job['metadata']['content_tags'], 'Test')
+        self.assertNotIn('studio', job['metadata'])
+        self.assertNotIn('performers', job['metadata'])
         self.assertNotIn('password', job['metadata'])
         self.assertIn('Test description', uploader.review_text(job, self.config))
         self.assertNotIn(self.config.get('Website', 'API_KEY'), uploader.review_text(job, self.config))
@@ -104,9 +106,10 @@ TorrentDownloadRetryDelay = 0
             with self.subTest(url=url), self.assertRaises(ValueError):
                 self.job(images=[url])
 
-    def test_invalid_year(self):
-        with self.assertRaises(ValueError):
-            self.job(metadata={'release_year': 'tomorrow'})
+    def test_unsupported_metadata_is_discarded(self):
+        self.assertEqual(self.job(metadata={'release_year': 'tomorrow', 'runtime_minutes': '90',
+                                            'studio': 'Studio', 'performers': 'Cast',
+                                            'backdrop_url': 'https://example.invalid/backdrop.jpg'})['metadata'], {})
 
     def test_write_checks_clean_their_files(self):
         uploader.check_writable(self.config)
@@ -115,10 +118,10 @@ TorrentDownloadRetryDelay = 0
 
     def test_dry_run_does_not_upload_or_hash(self):
         result = subprocess.run([sys.executable, str(ROOT / 'uploader.py'), 'upload', str(self.release),
-                                 '--cat', '25', '--studio', 'Test Studio', '--dry-run'],
+                                 '--cat', '25', '--genre', 'Test Genre', '--dry-run'],
                                 capture_output=True, text=True, env=os.environ)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('Test Studio', result.stdout)
+        self.assertIn('Test Genre', result.stdout)
         self.assertFalse((self.root / 'watch').exists())
         self.assertFalse((self.root / 'tmp').exists())
 
@@ -223,6 +226,7 @@ backend.main()
         job = self.job(description='Custom BBCode description',
                        images=['https://example.invalid/cover.jpg'],
                        metadata={'studio': 'Test Studio', 'performers': 'A, B', 'content_tags': 'Test Genre', 'imdbId': 'tt1234567', 'gameUrl': 'https://store.steampowered.com/app/12345/'})
+        job['metadata'].update(studio='Test Studio', performers='A, B', release_year='2024', runtime_minutes='90', backdrop_url='https://example.invalid/backdrop.jpg', content_categories='legacy')
         output = []
         events = []
         def emit(line):
@@ -235,13 +239,13 @@ backend.main()
         self.assertTrue(any(event.get('watch_torrent') for event in events))
         self.assertEqual(len(state['posts']), 1)
         fields = state['posts'][0]
-        self.assertEqual(fields['studio'], 'Test Studio')
-        self.assertEqual(fields['content_tags'], 'Test Genre')
+        for key in ('studio', 'performers', 'content_tags', 'release_year', 'runtime_minutes', 'backdrop_url', 'content_categories'):
+            self.assertNotIn(key, fields)
         self.assertEqual(fields['category'], '25')
         self.assertEqual(fields['imdbId'], 'tt1234567')
         self.assertEqual(fields['gameUrl'], 'https://store.steampowered.com/app/12345/')
         self.assertEqual(fields['othergenre'], 'Test Genre')
-        self.assertIn('Production: Test Studio', fields['nfo'])
+        self.assertNotIn('Production: Test Studio', fields['nfo'])
         self.assertIn('Custom BBCode description', fields['nfo'])
         self.assertIn('https://example.invalid/cover.jpg', fields['nfo'])
         from torrent_fixtures import Torrent

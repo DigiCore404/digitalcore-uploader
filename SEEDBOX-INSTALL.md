@@ -25,7 +25,7 @@ Right-click a release, or click its **…** button:
   Metadata lookup, folder images, screenshots and contact sheets follow your
   saved settings. There is no separate metadata or review prompt.
 - **Upload with metadata** opens a dialog to search for metadata or enter details,
-  including genres/tags, studio/cast, year, language, description and image URLs.
+  including tags/genres, language, description and image URLs.
   You can also correct the category. Entered details take precedence; blank fields
   use automatic detection. Click **Upload with metadata** to start.
 - **Test category rules** checks the release name without uploading.

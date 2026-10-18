@@ -259,7 +259,7 @@ MEDIAINFO = false
 
     def review(self):
         return self.post('/api/review', {'source': str(self.release), 'category': 3,
-                         'description': 'An offline preview', 'metadata': {'studio': 'Test Studio'}, 'images': []})
+                         'description': 'An offline preview', 'metadata': {'content_tags': 'Test Genre', 'language': 'english', 'release_year': '2024'}, 'images': []})
 
     def test_image_preview_requires_session_csrf_and_only_returns_images(self):
         endpoint='/api/images/preview'
@@ -460,7 +460,9 @@ MEDIAINFO = false
             result = response.json()
             self.assertEqual(result['summary']['files'], 2)
             self.assertEqual(result['summary']['images'], 1)
-            self.assertEqual(result['job']['metadata']['studio'], 'Test Studio')
+            self.assertEqual(result['job']['metadata']['content_tags'], 'Test Genre')
+            self.assertEqual(result['job']['metadata']['language'], 'english')
+            self.assertNotIn('release_year', result['job']['metadata'])
             run.assert_not_called()
 
     def test_entire_library_cannot_be_uploaded_accidentally(self):
