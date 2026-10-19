@@ -242,13 +242,13 @@ class Workspace:
             self.drafts.clear()
         return self.state()
 
-    def review(self, data):
+    def review(self, data, source_torrent=None):
         config = uploader.load_config()
         path = content_path(str(data.get('source', '')), config)
         if path == Path(config.get('Paths', 'DATADIR')).resolve():
             raise ValueError('Choose a release subfolder, not the entire content library.')
         job = uploader.validate_job(path, data.get('category'), str(data.get('description', '')),
-                                    data.get('images', []), data.get('metadata', {}), config)
+                                    data.get('images', []), data.get('metadata', {}), config, source_torrent=source_torrent)
         # Inspect symlink targets too: the web UI cannot upload arbitrary host paths.
         root = Path(config.get('Paths', 'DATADIR')).resolve()
         for directory, dirs, files in os.walk(path, followlinks=False):
@@ -267,7 +267,7 @@ class Workspace:
         from utils.rar_preview import preview_error
         archive_error=preview_error(path,job['category'],config)
         if archive_error:errors.append(archive_error)
-        if summary['archives'] and config.get('UnrarUpload','MODE',fallback='original_only')!='original_only' and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
+        if not source_torrent and summary['archives'] and config.get('UnrarUpload','MODE',fallback='original_only')!='original_only' and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
             errors.append('Archive files found. Choose an extracted release folder before uploading.')
         return {'review_id': token, 'job': job, 'summary': summary,
                 'category_name': next(c['name'] for c in uploader.categories() if c['id'] == job['category']),
@@ -288,13 +288,16 @@ class Workspace:
             from utils.rar_preview import preview_error
             archive_error=preview_error(draft['job']['source'],draft['job']['category'],config)
             if archive_error:errors.append(archive_error)
-            if folder_summary(draft['job']['source'])['archives'] and config.get('UnrarUpload','MODE',fallback='original_only')!='original_only' and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
+            if not draft['job'].get('source_torrent') and folder_summary(draft['job']['source'])['archives'] and config.get('UnrarUpload','MODE',fallback='original_only')!='original_only' and not config.getboolean('UnrarUpload', 'ENABLED', fallback=False):
                 errors.append('Archive files found. Choose an extracted release folder before uploading.')
             if errors:
                 raise ValueError('\n'.join(errors))
             uploader.check_writable(config)
             job = draft['job']
             content_path(job['source'], config)
+            if job.get('source_torrent'):
+                from utils.source_torrent import validate
+                validate(job['source_torrent'], job['source'], allowed_root=Path(config.get('Paths', 'DATADIR')))
             identity = identity or uuid.uuid4().hex
             self.history.create(identity, job)
             self.active = identity
@@ -478,7 +481,7 @@ class Handler(BaseHTTPRequestHandler):
             if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                 return self.send({'error': 'JSON request required.'}, 415)
             size = int(self.headers.get('Content-Length', '0'))
-            if not 0 < size <= (12 * 1024 * 1024 if urlparse(self.path).path == '/api/images/upload' else 6 * 1024 * 1024 if urlparse(self.path).path == '/api/imports/add' else 600000 if urlparse(self.path).path in ('/api/category-filters', '/api/category-filters/test') else 100000):
+            if not 0 < size <= (12 * 1024 * 1024 if urlparse(self.path).path == '/api/images/upload' else 90 * 1024 * 1024 if urlparse(self.path).path == '/api/imports/add' else 600000 if urlparse(self.path).path in ('/api/category-filters', '/api/category-filters/test') else 100000):
                 return self.send({'error': 'Request is too large or empty.'}, 413)
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict):

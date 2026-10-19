@@ -190,7 +190,7 @@ optional MTN contact sheet apply separately to each video.
 ## Upload
 
 1. Add your DigitalCore API key and personal announce URL in **Settings**.
-2. Connect qBittorrent in **Clients** if you want to import torrents.
+2. Connect qBittorrent in **Clients** for imports that need downloading; existing-data imports do not require a client.
 3. Choose **New upload** or **Import torrent**, fill in the release details and review before uploading.
 
 DigitalCore's image host is ready to use. TVmaze works without a key; TMDB and
@@ -198,6 +198,35 @@ IGDB can be enabled in Settings with your own credentials.
 
 Keep seeding after uploading. Folder and seeding instructions are available in
 **Manuals** inside the uploader.
+
+## Reuse an existing torrent
+
+Already have the complete pack or site rip? In **Import torrent**, enable
+**Data already exists — reuse existing torrent**. Choose its original `.torrent`
+(up to 64 MB), browse to the matching local release folder or file, fill in the
+release details and click **Upload existing data**. No download client is needed.
+
+The uploader checks the torrent's file paths and sizes, then edits its tracker,
+source and private flag with mkbrr while keeping the original piece hashes.
+Missing files, mismatched names/sizes, an invalid torrent or incompatible filters
+stop the upload. **It never falls back to rehashing.** This size/path check does
+not verify file contents: use unchanged, fully downloaded data.
+
+Screenshots, contact sheets and metadata still follow your settings. Original
+archives stay packed; this mode skips any additional unpacked upload. The
+confirmed DigitalCore torrent goes to your configured output watch folder for seeding.
+Progress and results appear in **Activity** and the import queue.
+
+For the CLI, add `--torrent` to the normal upload command:
+
+```bash
+bash start.sh upload /srv/media/My.Release --cat 6 --torrent /srv/torrents/My.Release.torrent --dry-run
+bash start.sh upload /srv/media/My.Release --cat 6 --torrent /srv/torrents/My.Release.torrent
+```
+
+The original `backend.py` CLI also accepts `--torrent`. Existing configurations
+with `Torrent.EDIT_TORRENT = true` now stop when the source torrent is missing or
+does not match, instead of creating a new torrent.
 
 ## Command line
 

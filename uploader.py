@@ -111,7 +111,7 @@ def check_writable(config):
             target.unlink(missing_ok=True)
 
 
-def validate_job(source, cat, description='', images=(), metadata=None, config=None):
+def validate_job(source, cat, description='', images=(), metadata=None, config=None, source_torrent=None):
     if metadata is not None and not isinstance(metadata, dict):
         raise ValueError('Metadata must be an object.')
     config = config or load_config()
@@ -119,6 +119,9 @@ def validate_job(source, cat, description='', images=(), metadata=None, config=N
     if not path.is_absolute():
         path = Path(config.get('Paths', 'DATADIR')) / path
     path = path.resolve(strict=True)
+    if source_torrent:
+        from utils.source_torrent import validate
+        validate(source_torrent, path, allowed_root=Path(config.get('Paths', 'DATADIR')))
     if path.is_file():
         from utils.single_files import prepare
         path = Path(prepare(str(path), config)['source'])
@@ -144,8 +147,10 @@ def validate_job(source, cat, description='', images=(), metadata=None, config=N
         parsed_game = urlparse(values['gameUrl'])
         if parsed_game.scheme != 'https' or parsed_game.username or parsed_game.password or parsed_game.hostname not in ('store.steampowered.com', 'www.gog.com', 'gog.com', 'www.igdb.com', 'igdb.com'):
             raise ValueError('Use an HTTPS Steam, GOG or IGDB game URL.')
-    return {'source': str(path), 'category': cat, 'description': description.strip(),
-            'images': urls, 'metadata': values}
+    job = {'source': str(path), 'category': cat, 'description': description.strip(),
+           'images': urls, 'metadata': values}
+    if source_torrent:job['source_torrent'] = str(Path(source_torrent).resolve(strict=True))
+    return job
 
 
 def review_text(job, config):
@@ -154,6 +159,8 @@ def review_text(job, config):
              f"Torrent watch folder: {config.get('Paths', 'WATCHFOLDER')}",
              'Images: ' + (f"{len(job['images'])} supplied URL(s)" if job['images'] else 'from release folder'),
              'Screenshots: ' + ('enabled' if config.getboolean('Settings', 'SCREENSHOTS') else 'disabled')]
+    if job.get('source_torrent'):
+        lines += ['Existing torrent: ' + job['source_torrent'], 'Reuse only: no download or rehash. A mismatch stops the upload.']
     lines += [f'{k.replace("_", " ").title()}: {v}' for k, v in job['metadata'].items()]
     lines += ['', 'Description:', job['description'] or '(Use the NFO in the folder, if present.)']
     return '\n'.join(lines)
@@ -348,7 +355,9 @@ def run_backend_cli(arguments):
     parser.add_argument('directory')
     parser.add_argument('-cat', '--cat', type=int)
     parser.add_argument('--job', help='Local JSON file containing upload details')
+    parser.add_argument('--torrent', help='Reuse this original .torrent; stop on mismatch, never rehash')
     args = parser.parse_args(arguments)
+    if args.torrent:args.torrent = str(Path(args.torrent).expanduser().resolve(strict=True))
     job = json.loads(Path(args.job).read_text(encoding='utf-8')) if args.job else {}
     if not isinstance(job, dict):
         raise ValueError('The upload job must be a JSON object.')
@@ -362,6 +371,11 @@ def run_backend_cli(arguments):
     if not source.is_absolute():
         source = Path(config.get('Paths', 'DATADIR')) / source
     source = source.resolve(strict=True)
+    original = args.torrent or job.get('source_torrent')
+    if original:
+        from utils.source_torrent import validate
+        validate(original, source, allowed_root=Path(config.get('Paths', 'DATADIR')))
+        job['source_torrent'] = str(original)
     if source.is_file():
         from utils.single_files import prepare
         source = Path(prepare(str(source), config)['source'])
@@ -391,6 +405,7 @@ def main():
     for field in ('genre', 'language', 'description'):
         upload.add_argument('--' + field, default='')
     upload.add_argument('--image', action='append', default=[])
+    upload.add_argument('--torrent', help='Reuse this original .torrent with existing local data; never rehash on mismatch')
     upload.add_argument('--imdb', default='')
     upload.add_argument('--game-url', default='')
     staging = upload.add_mutually_exclusive_group()
@@ -407,6 +422,9 @@ def main():
     watcher.add_argument('--stable', type=int)
     watcher.add_argument('--folder', help='Dedicated incoming folder inside DATADIR; overrides Watch.INCOMING_DIR')
     args = parser.parse_args()
+    if getattr(args, 'torrent', None):
+        args.torrent = str(Path(args.torrent).expanduser().resolve(strict=True))
+        if getattr(args, 'stage_mode', None):raise ValueError('Choose the existing data path directly when using --torrent; staging is not supported.')
     os.chdir(ROOT)
     if args.command == 'reset-password':
         from utils.web_security import reset_password_interactive
@@ -439,7 +457,7 @@ def main():
     elif args.stage_mode and args.dry_run:
         print('Dry run: staging '+args.stage_mode+' was not performed.')
     job = validate_job(args.folder, args.cat, args.description, args.image,
-                       dict(content_tags=args.genre, language=args.language, imdbId=args.imdb, gameUrl=args.game_url), config)
+                       dict(content_tags=args.genre, language=args.language, imdbId=args.imdb, gameUrl=args.game_url), config, source_torrent=args.torrent)
     print(review_text(job, config))
     if args.dry_run:
         print('\nDry run complete. No network calls, torrent creation or upload.')
