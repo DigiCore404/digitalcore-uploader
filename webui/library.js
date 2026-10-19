@@ -78,12 +78,12 @@ function openLibraryMetadata(row){
 }
 $('library-metadata-close').addEventListener('click',()=>$('library-metadata-dialog').close());
 $('library-lookup').addEventListener('click',()=>openMetadata('library'));
-$('library-metadata-form').addEventListener('submit',async event=>{event.preventDefault();if(!librarySelected)return;const button=event.submitter;button.disabled=true;try{const details={description:$('library-description').value,images:$('library-images').value.split('\n').map(x=>x.trim()).filter(Boolean),metadata:{}};for(const [id,key] of [['genre','content_tags'],['language','language'],['imdb','imdbId'],['game-url','gameUrl']])if($('library-'+id)?.value.trim())details.metadata[key]=$('library-'+id).value.trim();if($('library-category').value)details.category=Number($('library-category').value);await uploadFromLibrary(librarySelected,details);}finally{button.disabled=false;}});
+$('library-metadata-form').addEventListener('submit',async event=>{event.preventDefault();if(!librarySelected)return;const button=event.submitter;button.disabled=true;try{const details={post_title:$('library-post-title').value,description:$('library-description').value,images:$('library-images').value.split('\n').map(x=>x.trim()).filter(Boolean),metadata:{}};for(const [id,key] of [['genre','content_tags'],['language','language'],['imdb','imdbId'],['game-url','gameUrl']])if($('library-'+id)?.value.trim())details.metadata[key]=$('library-'+id).value.trim();if($('library-category').value)details.category=Number($('library-category').value);await uploadFromLibrary(librarySelected,details);}finally{button.disabled=false;}});
 window.addEventListener('resize',()=>$('library-context').hidden=true);
 
 async function saveLibraryDraft(preview=false){
  if(!librarySelected)return;
- const details={source:librarySelected.path,category:Number($('library-category').value)||libraryOverrides.get(librarySelected.path)||librarySelected.category?.id||null,description:$('library-description').value,images:$('library-images').value.split('\n').map(x=>x.trim()).filter(Boolean),metadata:{}};
+ const details={source:librarySelected.path,category:Number($('library-category').value)||libraryOverrides.get(librarySelected.path)||librarySelected.category?.id||null,post_title:$('library-post-title').value,description:$('library-description').value,images:$('library-images').value.split('\n').map(x=>x.trim()).filter(Boolean),metadata:{}};
  for(const [id,key] of [['studio','studio'],['performers','performers'],['genre','content_tags'],['year','release_year'],['runtime','runtime_minutes'],['language','language'],['imdb','imdbId'],['game-url','gameUrl']])if($('library-'+id)?.value.trim())details.metadata[key]=$('library-'+id).value.trim();
  try{const draft=await saveDraftPayload(details,null);toast('Draft saved. Nothing was published.');if(preview)await previewSavedDraft(draft.id);}catch(error){toast(error.message,true);}
 }

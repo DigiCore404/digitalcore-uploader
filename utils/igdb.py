@@ -1,4 +1,5 @@
 """IGDB game metadata using server-side Twitch application credentials."""
+from utils.metadata_text import plain_description
 from datetime import datetime,timezone
 import hashlib,json,re,threading,time
 from urllib.parse import urlparse
@@ -62,7 +63,7 @@ def normalize(row):
  platforms=names(row.get('platforms') or [])
  if platforms:description+='\n\nPlatforms: '+platforms
  companies=[v.get('company',{}) for v in row.get('involved_companies') or [] if isinstance(v,dict)]
- return {'id':str(row.get('id') or ''),'kind':'game','site':'IGDB','title':str(row.get('name') or '')[:500],'date':date,'url':url,'description':description.strip(),'images':images,
+ return {'id':str(row.get('id') or ''),'kind':'game','site':'IGDB','title':str(row.get('name') or '')[:500],'date':date,'url':url,'description':plain_description(description),'images':images,
          'metadata':{'gameUrl':url,'studio':names(companies),'content_tags':names(row.get('genres') or []),'release_year':date[:4]}}
 
 def search(client_id,client_secret,title):

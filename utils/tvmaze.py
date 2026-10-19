@@ -1,4 +1,5 @@
 """Public TVmaze series metadata; no account or API key required."""
+from utils.metadata_text import plain_description
 import html,re
 from html.parser import HTMLParser
 from urllib.parse import urlparse
@@ -20,7 +21,7 @@ def request(path,params=None):
  except requests.RequestException as exc:raise ValueError('Could not read TVmaze metadata. Try again later.') from exc
 
 def normalize(row):
- parser=PlainText();parser.feed(str(row.get('summary') or ''))
+
  image=str((row.get('image') or {}).get('original') or (row.get('image') or {}).get('medium') or '')
  images=[image] if urlparse(image).scheme=='https' and urlparse(image).hostname in ('static.tvmaze.com','tvmaze.com','www.tvmaze.com') else []
  date=str(row.get('premiered') or '')
@@ -28,7 +29,7 @@ def normalize(row):
  cast=', '.join(str((item.get('person') or {}).get('name') or '') for item in (row.get('_embedded') or {}).get('cast',[])[:12])
  network=row.get('network') or row.get('webChannel') or {}
  return {'id':str(row.get('id') or ''),'kind':'tv','site':'TVmaze','title':str(row.get('name') or '')[:500],'date':date[:10],
-   'url':'https://www.tvmaze.com/shows/'+str(row.get('id') or ''),'description':''.join(parser.parts).strip()[:30000],'images':images,
+   'url':'https://www.tvmaze.com/shows/'+str(row.get('id') or ''),'description':plain_description(row.get('summary')),'images':images,
    'metadata':{'imdbId':imdb if re.fullmatch(r'tt[0-9]{7,10}',imdb) else '', 'studio':str(network.get('name') or ''), 'performers':cast[:1000],
     'content_tags':', '.join(str(g) for g in row.get('genres') or [])[:1000],'release_year':date[:4] if re.match(r'^(19|20)[0-9]{2}',date) else '',
     'runtime_minutes':str(row.get('runtime') or row.get('averageRuntime') or ''),'language':str(row.get('language') or '')}}

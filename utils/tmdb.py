@@ -1,4 +1,5 @@
 """Optional movie/TV metadata from the fixed TMDB API origin."""
+from utils.metadata_text import plain_description
 import re
 import requests
 API = 'https://api.themoviedb.org/3'
@@ -34,7 +35,7 @@ def normalize(row, kind):
     imdb = (row.get('external_ids') or {}).get('imdb_id') or ''
     return {'id': str(row.get('id') or ''), 'kind': kind, 'site': 'TMDB',
             'title': str(row.get('title') or row.get('name') or '')[:500],
-            'date': date[:10], 'description': str(row.get('overview') or '')[:30000],
+            'date': date[:10], 'description': plain_description(str(row.get('overview') or '')[:30000]),
             'images': images, 'url': 'https://www.themoviedb.org/' + kind + '/' + str(row.get('id') or ''),
             'metadata': {'studio': names(row.get('production_companies') or []),
                 'performers': names((row.get('credits') or {}).get('cast', [])[:12]),
