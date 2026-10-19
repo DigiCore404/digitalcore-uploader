@@ -1,5 +1,9 @@
 # DigitalCore Uploader changelog
 
+## 3.2.1 · 2026-10-19
+
+- Restore consistent spacing between all Manuals panels on desktop and small screens.
+
 ## 3.2.0 · 2026-10-19
 
 - Add persistent upload drafts and a local screenshot, contact-sheet, MediaInfo and description preview without publishing or creating a torrent.
