@@ -1,5 +1,9 @@
 # DigitalCore Uploader changelog
 
+## 3.3.1 · 2026-10-19
+
+- Keep the expanded changelog in update instructions readable with a dark background and contrasting text. Upload behaviour is unchanged.
+
 ## 3.3.0 · 2026-10-19
 
 - Add visible coloured Rules buttons, a removal-rule overview and + New Rule. Support multiple named rules per client, preserve existing rules and apply only the first matching enabled rule.
