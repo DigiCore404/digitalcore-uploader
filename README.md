@@ -202,7 +202,7 @@ Keep seeding after uploading. Folder and seeding instructions are available in
 ## Reuse an existing torrent
 
 Already have the complete pack or site rip? In **Import torrent**, enable
-**Data already exists — reuse existing torrent**. Choose its original `.torrent`
+**Data already exists: reuse existing torrent**. Choose its original `.torrent`
 (up to 64 MB), browse to the matching local release folder or file, fill in the
 release details and click **Upload existing data**. No download client is needed.
 
