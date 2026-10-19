@@ -17,6 +17,7 @@ COPY --from=archive-tools /opt/archive/share/ /usr/local/share/digitalcore-archi
 WORKDIR /app
 COPY requirements.lock.txt ./
 RUN pip install --no-cache-dir -r requirements.lock.txt
+COPY CHANGELOG.md ./
 COPY defaults.ini config.example.ini uploader.py backend.py web.py ./
 COPY utils/ ./utils/
 COPY webui/ ./webui/

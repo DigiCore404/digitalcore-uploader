@@ -28,12 +28,12 @@ def _choose(rows,title,year):
 
 def enrich(directory, category, job, config):
     result=dict(job);explicit=dict(job.get('metadata') or {})
-    local=extract_metadata(Path(directory).name,directory=directory)
+    local=extract_metadata((Path(directory).stem if Path(directory).is_file() else Path(directory).name),directory=directory)
     local.update({k:v for k,v in explicit.items() if v})
     result['metadata']=local
     kind='game' if category in _ids(config,'GAME_CATEGORIES') else 'tv' if category in _ids(config,'IMDB_TV_CATEGORIES') else 'movie' if category in _ids(config,'IMDB_MOVIE_CATEGORIES') else ''
     if not kind or (kind=='game' and (not config.getboolean('Settings','GAME_INFO',fallback=True) or local.get('gameUrl'))) or (kind!='game' and (not config.getboolean('Settings','IMDB',fallback=True) or local.get('imdbId'))):return result,[]
-    title=title_from_release(Path(directory).name,config,kind)
+    title=title_from_release((Path(directory).stem if Path(directory).is_file() else Path(directory).name),config,kind)
     if len(title)<2:return result,[]
     selected=None
     try:

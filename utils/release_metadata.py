@@ -53,7 +53,7 @@ def extract_language(release_name):
 def runtime_minutes(directory):
     """Runtime in whole minutes from the largest media file, via mediainfo."""
     try:
-        media = [p for p in Path(directory).rglob('*')
+        media = [p for p in ([Path(directory)] if Path(directory).is_file() else Path(directory).rglob('*'))
                  if p.is_file() and p.suffix.lower() in MEDIA_EXTS
                  and 'sample' not in str(p).lower()]
         if not media:
@@ -75,7 +75,8 @@ def extract_metadata(release_name, directory=None):
     metadata = {'release_year': extract_release_year(release_name), 'language': extract_language(release_name)}
     if directory is not None:
         metadata['runtime_minutes'] = runtime_minutes(directory)
-        for nfo in sorted(Path(directory).glob('*.nfo'))[:10]:
+        for nfo in ([Path(directory).with_suffix('.nfo')] if Path(directory).is_file() else sorted(Path(directory).glob('*.nfo'))[:10]):
+            if not nfo.is_file():continue
             if nfo.stat().st_size > 2 * 1024 * 1024:
                 continue
             match = re.search(r'imdb\.com/title/(tt[0-9]{7,10})', nfo.read_text(encoding='utf-8', errors='replace'), re.I)
