@@ -121,6 +121,11 @@ def validate_job(source, cat, description='', images=(), metadata=None, config=N
     if not path.is_absolute():
         path = Path(config.get('Paths', 'DATADIR')) / path
     path = path.resolve(strict=True)
+    from utils.torrent_exclusions import patterns, check_source
+    excluded=patterns(config)
+    if excluded and (source_torrent or config.getboolean('Torrent','EDIT_TORRENT',fallback=False)):
+        raise ValueError('Existing-torrent reuse cannot remove excluded files. Clear Torrent exclusions or create a new torrent; no rehash was started.')
+    check_source(path,excluded)
     if source_torrent:
         from utils.source_torrent import validate
         validate(source_torrent, path, allowed_root=Path(config.get('Paths', 'DATADIR')))
@@ -149,6 +154,10 @@ def validate_job(source, cat, description='', images=(), metadata=None, config=N
         parsed_game = urlparse(values['gameUrl'])
         if parsed_game.scheme != 'https' or parsed_game.username or parsed_game.password or parsed_game.hostname not in ('store.steampowered.com', 'www.gog.com', 'gog.com', 'www.igdb.com', 'igdb.com'):
             raise ValueError('Use an HTTPS Steam, GOG or IGDB game URL.')
+    from utils.metadata_text import bounded_names
+    if values.get('content_tags'):values['content_tags']=bounded_names(values['content_tags'])
+    from utils.metadata_text import bounded_names
+    if values.get('content_tags'):values['content_tags']=bounded_names(values['content_tags'])
     from utils.publication_title import post_title as validate_title
     job = {'post_title':validate_title(post_title),'source': str(path), 'release_name': path.stem if path.is_file() else path.name, 'category': cat, 'description': description.strip(),
            'images': urls, 'metadata': values}
@@ -164,6 +173,8 @@ def review_text(job, config):
              'Screenshots: ' + ('enabled' if config.getboolean('Settings', 'SCREENSHOTS') else 'disabled')]
     if job.get('source_torrent'):
         lines += ['Existing torrent: ' + job['source_torrent'], 'Reuse only: no download or rehash. A mismatch stops the upload.']
+    from utils.torrent_exclusions import patterns
+    lines.append('Torrent exclusions: '+(', '.join(patterns(config)) or 'none'))
     if job.get('post_title'):lines.append('Site post title: '+job['post_title'])
     lines += [f'{k.replace("_", " ").title()}: {v}' for k, v in job['metadata'].items()]
     lines += ['', 'Description:', job['description'] or '(Use the NFO in the folder, if present.)']

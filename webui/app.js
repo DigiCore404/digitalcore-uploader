@@ -49,6 +49,7 @@ function updateState(next) {
   $('content-path').readOnly = $('watch-path').readOnly = settings.paths_locked;
   $('path-help').textContent = settings.paths_locked ? 'These folders are mapped by Docker. Change the host folders in your container configuration.' : 'Paths are on the machine running the uploader. Relative paths start at the app folder.';
   $('image-host').value=settings.image_host||'digitalcore';$('image-host-key-state').textContent=settings.has_image_host_key?'✓ saved':'optional';updateImageHostFields();
+  $('blvckout-state').textContent=settings.has_blvckout_key?'✓ saved':'optional';
   $('tmdb-state').textContent=settings.has_tmdb_token?'✓ saved':'optional';
   $('igdb-state').textContent=settings.has_igdb_credentials?'✓ saved':'optional';
   $('key-state').textContent = settings.has_api_key ? '✓ saved securely' : 'not configured';
@@ -86,7 +87,7 @@ function jobInput(){return {source,post_title:$('post-title').value,category:Num
 function reviewRow(label,value){const row=document.createElement('div');const term=document.createElement('dt');term.textContent=label;const content=document.createElement('dd');content.textContent=value;row.append(term,content);$('review-fields').append(row);}
 $('details-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;try{review=await api('/api/review',jobInput());$('review-fields').replaceChildren();reviewRow('Release',review.job.post_title||review.job.release_name||review.job.source.split(/[\\/]/).pop());reviewRow('Folder',review.job.source);reviewRow('Category',review.category_name);reviewRow('Content',review.summary.files+' files · '+prettySize(review.summary.bytes)+(review.summary.limited?' (partial scan)':''));for(const [key,value]of Object.entries(review.job.metadata))reviewRow({content_tags:'Tags / genres'}[key]||key[0].toUpperCase()+key.slice(1),value);reviewRow('Description',review.job.description||'From the NFO in your folder, if present.');reviewRow('Images',review.job.images.length?review.job.images.join('\n'):review.summary.images+' folder images · automatic screenshots '+(state.settings.options.SCREENSHOTS?'enabled':'disabled'));reviewRow('Watch folder',review.watch);$('review-errors').hidden=review.ready;$('review-errors').textContent=review.ready?'':'Finish setup before uploading:\n'+review.errors.join('\n');$('publish').disabled=!review.ready||!!state.active;step(3);}catch(e){toast(e.message,true);}finally{button.disabled=false;}});
 $('publish').addEventListener('click',async()=>{if(!review)return;$('publish').disabled=true;try{const job=await api('/api/upload',{review_id:review.review_id});review=null;page('activity');openJob(job.id);toast('Upload started. We’ll take it from here.');}catch(e){toast(e.message,true);$('publish').disabled=false;}});
-$('settings-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;try{const next=await api('/api/settings',{config_fields:collectConfigSettings(),screenshot_engine:$('screenshot-engine').value,...(button.closest('.settings-delivery')?{delivery_mode:$('delivery-mode').value,import_client:$('delivery-client').value,import_remote_root:$('delivery-remote').value,import_local_root:$('delivery-local').value}:{}),tmdb_token:$('tmdb-token').value,igdb_client_id:$('igdb-client-id').value,igdb_client_secret:$('igdb-client-secret').value,api_key:$('api-key').value,announce:$('announce').value,content:$('content-path').value,watch:$('watch-path').value,options:{IMAGE_UPLOAD:$('opt-images').checked,SCREENSHOTS:$('opt-screenshots').checked,MEDIAINFO:$('opt-mediainfo').checked,DUPECHECK:$('opt-dupe').checked}});updateState(next);$('api-key').value='';$('announce').value='';$('tmdb-token').value='';$('igdb-client-id').value='';$('igdb-client-secret').value='';$('image-host-key').value='';review=null;toast(next.ready?'Settings saved. Your workspace is ready.':'Settings saved. Check the remaining setup items.');}catch(e){toast(e.message,true);}finally{button.disabled=false;}});
+$('settings-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;try{const next=await api('/api/settings',{config_fields:collectConfigSettings(),screenshot_engine:$('screenshot-engine').value,blvckout_key:$('blvckout-key').value,...(button.closest('.settings-delivery')?{delivery_mode:$('delivery-mode').value,import_client:$('delivery-client').value,import_remote_root:$('delivery-remote').value,import_local_root:$('delivery-local').value}:{}),tmdb_token:$('tmdb-token').value,igdb_client_id:$('igdb-client-id').value,igdb_client_secret:$('igdb-client-secret').value,api_key:$('api-key').value,announce:$('announce').value,content:$('content-path').value,watch:$('watch-path').value,options:{IMAGE_UPLOAD:$('opt-images').checked,SCREENSHOTS:$('opt-screenshots').checked,MEDIAINFO:$('opt-mediainfo').checked,DUPECHECK:$('opt-dupe').checked}});updateState(next);$('api-key').value='';$('announce').value='';$('blvckout-key').value='';$('tmdb-token').value='';$('igdb-client-id').value='';$('igdb-client-secret').value='';$('image-host-key').value='';review=null;toast(next.ready?'Settings saved. Your workspace is ready.':'Settings saved. Check the remaining setup items.');}catch(e){toast(e.message,true);}finally{button.disabled=false;}});
 function renderActivity(jobs){
   const list=$('activity-list');list.replaceChildren();
   if(!jobs.length){const empty=element('div','empty-state');empty.append(element('h3','','No matching uploads.'),element('p','','Change your search or status filter.'));list.append(empty);return;}
@@ -186,7 +187,7 @@ function showMetadataPreview(detail,candidates=[],chosenSources=null){
   if(options.length>1){const select=document.createElement('select');select.setAttribute('aria-label',label+' source');for(const [index,option] of options.entries())select.append(new Option(option.value+' — '+option.sources.join(' + '),index));select.addEventListener('change',()=>{const option=options[Number(select.value)];input.value=option.value;provenance.textContent=option.sources.join(' + ');});wrap.append(select);}
   input.addEventListener('input',()=>{provenance.textContent='Edited manually';});wrap.append(provenance);grid.append(wrap);
  }
- panel.append(grid,element('h3','metadata-images-title','Images'),element('p','field-help','Select the images to import. Click an image to enlarge it.'));
+ panel.append(grid,element('h3','metadata-images-title','Images'),element('p','field-help','Select images to import. Use metadata uploads them to your configured image host. Click an image to enlarge it.'));
  const gallery=element('div','metadata-preview-gallery'),images=[];
  for(const raw of (detail.images||[]).slice(0,16)){try{const u=new URL(raw);if(u.protocol==='https:'&&!u.username&&!u.password&&!images.some(i=>i.url===u.href))images.push({url:u.href});}catch{}}
  for(const [index,item] of images.entries()){
@@ -197,11 +198,17 @@ function showMetadataPreview(detail,candidates=[],chosenSources=null){
  if(!images.length)gallery.append(element('p','field-help','No images found for this release. You can add your own after importing the details.'));
  panel.append(gallery);
  const footer=element('div','metadata-preview-footer'),cancel=element('button','button subtle','Back to results'),apply=element('button','button primary','Use metadata');cancel.type=apply.type='button';apply.disabled=selected.length===0;cancel.addEventListener('click',resetMetadataPreview);
- apply.addEventListener('click',()=>{
+ apply.addEventListener('click',async()=>{
+  apply.disabled=true;cancel.disabled=true;apply.textContent='Uploading selected images…';
+  try{
+  const hosted=[];for(const item of images.filter(i=>i.check.checked)){if(version!==metadataPreviewVersion)return;if(!item.hostedUrl)item.hostedUrl=(await api('/api/images/rehost',{url:item.url})).url;hosted.push(item.hostedUrl);}
+  if(version!==metadataPreviewVersion)return;
   const prefix=metadataTarget==='imports'?'import-':metadataTarget==='library'?'library-':'';
   for(const [id,key] of [['imdb','imdbId'],['game-url','gameUrl'],['genre','content_tags']])$(prefix+id).value=fields[key]?.value.trim()||'';
-  if(usePostTitle.checked)$(prefix+'post-title').value=fields.title.value.trim();$(prefix+'description').value=fields.description.value.trim();$(prefix+'images').value=images.filter(i=>i.check.checked).map(i=>i.url).join('\n');
+  if(usePostTitle.checked)$(prefix+'post-title').value=fields.title.value.trim();$(prefix+'description').value=fields.description.value.trim();$(prefix+'images').value=hosted.join('\n');
   review=null;metadataPreviewVersion++;$('metadata-dialog').close();livePreview();toast('Selected metadata and images filled. You can still edit the upload.');
+  }catch(error){if(version===metadataPreviewVersion)toast('Could not import selected images: '+error.message,true);}
+  finally{apply.disabled=false;cancel.disabled=false;apply.textContent='Use metadata';}
  });footer.append(cancel,apply);panel.append(footer);panel.scrollIntoView({block:'start'});
  let next=0;
  async function loadImages(){while(next<images.length&&version===metadataPreviewVersion){const item=images[next++];try{const result=await api('/api/images/preview',{url:item.url});if(version!==metadataPreviewVersion)return;item.image.src=result.image;item.image.hidden=false;item.zoom.disabled=false;item.status.textContent='';}catch(error){if(version!==metadataPreviewVersion)return;item.check.checked=false;item.status.textContent='Preview unavailable. Image excluded; select it manually to keep the link. '+error.message;}}}
@@ -220,10 +227,10 @@ $('lookup-upload').addEventListener('click',()=>openMetadata('upload'));
 $('lookup-import').addEventListener('click',()=>openMetadata('imports'));
 $('close-metadata').addEventListener('click',()=>$('metadata-dialog').close());
 $('metadata-search').addEventListener('submit',async event=>{
- event.preventDefault();$('search-metadata').disabled=true;$('metadata-results').replaceChildren();$('metadata-message').textContent='Searching '+({igdb:'IGDB',tmdb:'TMDB',tvmaze:'TVmaze'}[$('metadata-provider').value])+'…';
+ event.preventDefault();$('search-metadata').disabled=true;$('metadata-results').replaceChildren();$('metadata-message').textContent='Searching '+({blvckout:'BLVCKOUT',igdb:'IGDB',tmdb:'TMDB',tvmaze:'TVmaze'}[$('metadata-provider').value])+'…';
  try{
   const query=SearchTitles.normalize($('metadata-query').value,state?.settings.metadata_ignore_words||[]);$('metadata-query').value=query;
-  const provider=$('metadata-provider').value;const kind=provider==='igdb'?'game':provider==='tvmaze'?'tv':$('metadata-kind').value;const result=await api('/api/'+provider+'/search',{query,kind});
+  const provider=$('metadata-provider').value;const kind=provider==='blvckout'?'movie':provider==='igdb'?'game':provider==='tvmaze'?'tv':$('metadata-kind').value;const result=await api('/api/'+provider+'/search',{query,kind});
   $('metadata-message').textContent=result.results.length?'Choose the correct title and year.':'No matches. Try the title without release tags.';
   for(const match of result.results){
    const row=element('div','metadata-result'),info=element('div');info.append(element('strong','',match.title),element('p','',[match.date,kind==='game'?'Game':kind==='tv'?'TV series':'Movie'].filter(Boolean).join(' · ')));
@@ -344,3 +351,5 @@ $('refresh-drafts').addEventListener('click',loadDrafts);
 $('save-upload-draft').addEventListener('click',()=>saveUploadDraft(false));
 $('preview-upload-draft').addEventListener('click',()=>saveUploadDraft(true));
 $('draft-preview-dialog').addEventListener('close',()=>{++previewPoll;previewDraftId=null;});
+
+apiTestControls($('blvckout-key'),'blvckout','BLVCKOUT',()=>({blvckout_key:$('blvckout-key').value}));
