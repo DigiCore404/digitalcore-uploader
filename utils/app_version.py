@@ -1,5 +1,5 @@
 """Application identity, independent of saved user configuration."""
-VERSION = "3.5.0"
+VERSION = "3.6.0"
 NAME = "DigitalCore Uploader"
 SLUG = "digitalcore-uploader"
 REPOSITORY = "DigiCore404/digitalcore-uploader"
