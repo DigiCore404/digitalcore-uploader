@@ -240,3 +240,7 @@ dialog{color:var(--ink)}.metadata-preview-fields label{color:var(--ink)}.metadat
 .activity-retry-actions{display:flex;flex-direction:column;align-items:center;gap:6px}.activity-retry-actions .button{padding:5px 10px;font-size:.75rem}#activity-list .activity-row{cursor:pointer;width:100%}#activity-list .activity-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
 #activity-list .activity-failure{color:#b72f4a;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.timeline-error{display:block;max-width:320px;white-space:normal;text-transform:none;letter-spacing:normal;color:#b72f4a}
+
+.requests-table{width:100%;border-collapse:collapse;table-layout:auto}.requests-table th,.requests-table td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--line,#ddd)}.requests-table td:first-child{overflow-wrap:anywhere}.requests-table td:last-child{min-width:220px}.requests-table th button{border:0;background:none;color:inherit;font:inherit;cursor:pointer;padding:0}.requests-table-wrap{overflow-x:auto}.request-requirements{white-space:pre-wrap;padding:12px;border:1px solid var(--line,#ddd);max-height:220px;overflow:auto}.request-choice{margin:18px 0}.request-choice input{max-width:180px}
+
+.requests-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px}.requests-table-wrap{max-width:100%}.requests-panel #requests-form{align-items:end}.requests-panel #requests-form label{min-width:0}.requests-panel #requests-form input,.requests-panel #requests-form select{width:100%}

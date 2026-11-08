@@ -1,5 +1,11 @@
 # DigitalCore Uploader changelog
 
+## 3.7.0 · 2026-11-08
+
+- Add a searchable, paginated Requests table with category filters, sortable title/reward/votes/date columns, request details and a Fill request action.
+- Carry the selected request through upload review, saved drafts, torrent imports, CLI --request-id and retry snapshots. Send its reqid with the torrent; recheck availability before processing. The tracker enforces ownership, races, approval and reward rules. A failed or duplicate upload does not separately fill a request.
+- Use the existing configured tracker API key; no additional credentials or tracker deployment are required.
+
 ## 3.6.0 · 2026-10-27
 
 - Show the failed processing step and concrete error in Activity and upload details; keep errors in the saved timeline and redact configured credentials from worker output.

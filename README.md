@@ -314,3 +314,7 @@ Before retrying publication, the uploader checks the site's exact-name search. I
 A retry before publication reruns processing rather than resuming partially generated screenshots or hashes. Existing-torrent reuse still stops on a mismatch without rehashing. Older history did not save every input, so incomplete records require confirmation; original import torrents are recovered when available. Retry does not automatically restart a paused source download or delete its data.
 
 Failed attempts show the concrete error and processing step in Activity and upload details, with the saved worker log, exit code and timeline. Configured credentials are redacted. Retry keeps the previous attempt and its reason; successful delivery recovery retains the earlier error events in its timeline. Older records can only show the error information that was actually saved.
+
+### Filling requests
+
+Open **Requests** to search open tracker requests, filter by category and sort the table. Choose **Fill request**, select the matching local release and check the requirements in the upload details. The review names the request explicitly. You can also enter its numeric ID or use `upload <folder> --cat <id> --request-id <request-id>` from the CLI. Drafts and retries retain the selection. The tracker handles acceptance/approval, filling and bounty payment; your own or already-filled requests cannot be filled. No request is separately marked filled after a failed or duplicate upload.
